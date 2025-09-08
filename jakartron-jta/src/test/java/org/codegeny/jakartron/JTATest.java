@@ -9,9 +9,9 @@ package org.codegeny.jakartron;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,15 +20,17 @@ package org.codegeny.jakartron;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Observes;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.Transactional;
+
+import java.io.Serializable;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Observes;
-import javax.transaction.TransactionScoped;
-import javax.transaction.Transactional;
-import java.io.Serializable;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class JTATest {

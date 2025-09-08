@@ -20,12 +20,12 @@ package org.codegeny.jakartron.jndi;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessInjectionTarget;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public class JNDIExtension implements Extension {

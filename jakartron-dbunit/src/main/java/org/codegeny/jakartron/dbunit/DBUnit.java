@@ -20,17 +20,17 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
-import org.dbunit.operation.DatabaseOperation;
-import org.dbunit.operation.DeleteAllOperation;
-import org.dbunit.operation.InsertOperation;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import org.dbunit.operation.DatabaseOperation;
+import org.dbunit.operation.DeleteAllOperation;
+import org.dbunit.operation.InsertOperation;
 
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
@@ -40,12 +40,12 @@ public @interface DBUnit {
     String connection() default "";
 
     Class<? extends DatabaseOperation>[] setUpOperations() default {
-            DeleteAllOperation.class,
-            InsertOperation.class
+      DeleteAllOperation.class,
+      InsertOperation.class
     };
 
     Class<? extends DatabaseOperation>[] tearDownOperations() default {
-            DBUnitAssertion.NonStrict.class
+      DBUnitAssertion.NonStrict.class
     };
 
     String[] initialDataSets() default {};

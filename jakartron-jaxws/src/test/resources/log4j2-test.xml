@@ -17,17 +17,17 @@
   #L%
 -->
 <Configuration status="INFO">
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%highlight{%level}] %style{%date{HH:mm:ss.SSS}}{bright,yellow} [%thread] %style{%logger}{cyan} - %message%n%rException" disableAnsi="false"/>
-        </Console>
-    </Appenders>
-    <Loggers>
-        <Logger name="org.codegeny.jakartron" level="INFO"/>
-        <Logger name="org.apache.tomcat.util.scan.StandardJarScanner" level="ERROR"/>
-<!--        <Logger name="com.sun.xml.ws" level="TRACE"/>-->
-        <Root level="WARN">
-            <AppenderRef ref="Console"/>
-        </Root>
-    </Loggers>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%highlight{%level}] %style{%date{HH:mm:ss.SSS}}{bright,yellow} [%thread] %style{%logger}{cyan} - %message%n%rException" disableAnsi="false"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.codegeny.jakartron" level="INFO"/>
+		<Logger name="org.apache.tomcat.util.scan.StandardJarScanner" level="ERROR"/>
+		<!--        <Logger name="com.sun.xml.ws" level="TRACE"/>-->
+		<Root level="WARN">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
 </Configuration>

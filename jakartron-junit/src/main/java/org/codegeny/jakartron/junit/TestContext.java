@@ -20,9 +20,10 @@ package org.codegeny.jakartron.junit;
  * #L%
  */
 
-import javax.enterprise.context.spi.AlterableContext;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.AlterableContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,7 +39,7 @@ public final class TestContext implements AlterableContext {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(Contextual<T> contextual, CreationalContext<T> context) {
-        return (T) map.computeIfAbsent(contextual, c -> new BeanInstance<T>(contextual, context)).get();
+        return (T) map.computeIfAbsent(contextual, c -> new BeanInstance<>(contextual, context)).get();
     }
 
     @Override

@@ -9,9 +9,9 @@ package org.codegeny.jakartron.jmsra;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,19 @@ package org.codegeny.jakartron.jmsra;
  * #L%
  */
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Observes;
+import jakarta.jms.MessageListener;
+
+import java.util.logging.Logger;
+
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.ra.ActiveMQResourceAdapter;
 import org.apache.activemq.artemis.ra.inflow.ActiveMQActivationSpec;
-import org.codegeny.jakartron.jca.ConfigureResourceAdapter;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
-import javax.jms.MessageListener;
-import java.util.logging.Logger;
+import org.codegeny.jakartron.jca.ConfigureResourceAdapter;
 
 @Dependent
 public class JMSRAProducer {

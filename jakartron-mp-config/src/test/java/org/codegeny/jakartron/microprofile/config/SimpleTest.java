@@ -20,13 +20,14 @@ package org.codegeny.jakartron.microprofile.config;
  * #L%
  */
 
-import org.codegeny.jakartron.DisableDiscovery;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
+import org.codegeny.jakartron.DisableDiscovery;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 @DisableDiscovery

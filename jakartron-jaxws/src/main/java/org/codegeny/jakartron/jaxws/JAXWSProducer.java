@@ -20,6 +20,23 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.jws.WebService;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.xml.ws.handler.Handler;
+import jakarta.xml.ws.soap.SOAPBinding;
+
+import javax.xml.namespace.QName;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.sun.xml.ws.api.BindingID;
 import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.server.Container;
@@ -33,24 +50,8 @@ import com.sun.xml.ws.transport.http.servlet.WSServletDelegate;
 import com.sun.xml.ws.util.HandlerAnnotationInfo;
 import com.sun.xml.ws.util.HandlerAnnotationProcessor;
 import com.sun.xml.ws.util.xml.XmlUtil;
-import org.codegeny.jakartron.servlet.Initialized;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Unmanaged;
-import javax.jws.WebService;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.xml.namespace.QName;
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.soap.SOAPBinding;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.codegeny.jakartron.servlet.Initialized;
 
 @Dependent
 public final class JAXWSProducer {
@@ -60,10 +61,10 @@ public final class JAXWSProducer {
         Dynamic registration = context.addServlet(WSServlet.class.getName(), WSServlet.class);
 
         List<ServletAdapter> adapters = beanManager.getExtension(JAXWSIntegration.class).getImplementorClasses().stream()
-                .filter(c -> !Modifier.isAbstract(c.getModifiers()))
-                .map(implementorClass -> toServletAdapter(implementorClass, context, beanManager))
-                .peek(adapter -> registration.addMapping(adapter.getValidPath()))
-                .collect(Collectors.toList());
+		  .filter(c -> !Modifier.isAbstract(c.getModifiers()))
+		  .map(implementorClass -> toServletAdapter(implementorClass, context, beanManager))
+		  .peek(adapter -> registration.addMapping(adapter.getValidPath()))
+		  .collect(Collectors.toList());
 
         context.setAttribute(WSServlet.JAXWS_RI_RUNTIME_INFO, new WSServletDelegate(adapters, context));
     }
@@ -78,17 +79,17 @@ public final class JAXWSProducer {
         QName portName = new QName(webService.targetNamespace(), webService.portName());
 
         WSEndpoint<?> endpoint = WSEndpoint.create(
-                implementorClass,
-                false,
-                new BeanInvoker(beanManager),
-                serviceName,
-                portName,
-                createContainer(context),
-                createBinding(implementorClass, serviceName, portName, beanManager),
-                createWsdl(webService.wsdlLocation()),
-                Collections.emptyList(),
-                XmlUtil.createDefaultCatalogResolver(),
-                false
+		  implementorClass,
+		  false,
+		  new BeanInvoker(beanManager),
+		  serviceName,
+		  portName,
+		  createContainer(context),
+		  createBinding(implementorClass, serviceName, portName, beanManager),
+		  createWsdl(webService.wsdlLocation()),
+		  Collections.emptyList(),
+		  XmlUtil.createDefaultCatalogResolver(),
+		  false
         );
 
         return new ServletAdapterList(context).createAdapter(webService.name(), urlPattern, endpoint);

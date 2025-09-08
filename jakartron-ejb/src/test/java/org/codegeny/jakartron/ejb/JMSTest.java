@@ -9,9 +9,9 @@ package org.codegeny.jakartron.ejb;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,24 +20,25 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
+import jakarta.annotation.Resource;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.inject.Inject;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.Queue;
+import jakarta.transaction.Transactional;
+
 import org.awaitility.Awaitility;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.inject.Inject;
-import javax.jms.JMSContext;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.transaction.Transactional;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
-@JMSDestinationDefinition(name = "testQueue", interfaceName = "javax.jms.Queue")
+@JMSDestinationDefinition(name = "testQueue", interfaceName = "jakarta.jms.Queue")
 public class JMSTest {
 
     @MessageDriven(activationConfig = @ActivationConfigProperty(propertyName = "destination", propertyValue = "testQueue"))
@@ -65,8 +66,8 @@ public class JMSTest {
         private JMSContext context;
 
         public void send(String message) throws Exception {
-             context.createProducer().send(queue, "hello world!");
-             Thread.sleep(1000);
+            context.createProducer().send(queue, "hello world!");
+            Thread.sleep(1000);
         }
     }
 

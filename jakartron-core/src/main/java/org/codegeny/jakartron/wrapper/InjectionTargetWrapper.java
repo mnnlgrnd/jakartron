@@ -20,8 +20,8 @@ package org.codegeny.jakartron.wrapper;
  * #L%
  */
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 
 public abstract class InjectionTargetWrapper<T> extends ProducerWrapper<T> implements InjectionTarget<T> {
 

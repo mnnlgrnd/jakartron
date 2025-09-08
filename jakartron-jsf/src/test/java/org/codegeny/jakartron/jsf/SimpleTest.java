@@ -20,16 +20,17 @@ package org.codegeny.jakartron.jsf;
  * #L%
  */
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
 import org.codegeny.jakartron.AdditionalClasses;
 import org.codegeny.jakartron.DisableDiscovery;
 import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.codegeny.jakartron.selenium.EnableSelenium;
 import org.codegeny.jakartron.selenium.Location;
 import org.codegeny.jakartron.selenium.Navigator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 @ExtendWithJakartron
 @DisableDiscovery
@@ -82,4 +83,3 @@ public class SimpleTest {
         Assertions.assertEquals("world", page.getMessage());
     }
 }
-

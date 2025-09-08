@@ -20,14 +20,20 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.wrapper.InjectionTargetWrapper;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJBContext;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.spi.AnnotatedField;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.ProcessInjectionTarget;
 
-import javax.annotation.Resource;
-import javax.ejb.EJBContext;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
 import java.util.Set;
+
+import org.codegeny.jakartron.wrapper.InjectionTargetWrapper;
 
 final class EJBContextInjectionTarget<T> extends InjectionTargetWrapper<T> {
 

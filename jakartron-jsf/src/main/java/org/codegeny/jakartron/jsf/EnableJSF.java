@@ -20,18 +20,19 @@ package org.codegeny.jakartron.jsf;
  * #L%
  */
 
-import com.sun.faces.application.view.ViewScopeExtension;
-import com.sun.faces.cdi.CdiExtension;
-import com.sun.faces.flow.FlowCDIExtension;
-import com.sun.faces.flow.FlowDiscoveryCDIExtension;
-import org.codegeny.jakartron.AdditionalClasses;
-import org.codegeny.jakartron.servlet.EnableServlet;
-import org.codegeny.jakartron.validation.EnableValidation;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.sun.faces.application.view.ViewScopeExtension;
+import com.sun.faces.cdi.CdiExtension;
+import com.sun.faces.flow.FlowCDIExtension;
+import com.sun.faces.flow.FlowDiscoveryCDIExtension;
+
+import org.codegeny.jakartron.AdditionalClasses;
+import org.codegeny.jakartron.servlet.EnableServlet;
+import org.codegeny.jakartron.validation.EnableValidation;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

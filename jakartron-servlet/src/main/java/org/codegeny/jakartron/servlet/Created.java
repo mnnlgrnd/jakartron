@@ -20,8 +20,9 @@ package org.codegeny.jakartron.servlet;
  * #L%
  */
 
-import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Qualifier;
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.inject.Qualifier;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

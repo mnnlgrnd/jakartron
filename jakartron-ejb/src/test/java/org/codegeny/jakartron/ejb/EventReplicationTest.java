@@ -20,20 +20,25 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.junit.jupiter.api.RepeatedTest;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJBException;
-import javax.ejb.MessageDriven;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.EventMetadata;
-import javax.inject.Inject;
-import javax.inject.Qualifier;
-import javax.jms.*;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.MessageDriven;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.EventMetadata;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.Topic;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -41,8 +46,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.is;
+import org.junit.jupiter.api.RepeatedTest;
+
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class EventReplicationTest {
@@ -55,28 +61,13 @@ public class EventReplicationTest {
     private static final String TOPIC_NAME = "eventTopic";
     private static final Logger LOGGER = Logger.getLogger(EventReplicationTest.class.getName());
 
-    public static class EventMessage implements Serializable {
+    public record EventMessage(Serializable event, Annotation... qualifiers) implements Serializable {
 
-        private final Serializable event;
-        private final Annotation[] qualifiers;
-
-        public EventMessage(Serializable event, Annotation... qualifiers) {
-            this.event = event;
-            this.qualifiers = qualifiers;
-        }
-
-        public Serializable getEvent() {
-            return event;
-        }
-
-        public Annotation[] getQualifiers() {
-            return qualifiers;
-        }
     }
 
     @MessageDriven(activationConfig = {
-            @ActivationConfigProperty(propertyName = "destination", propertyValue = TOPIC_NAME),
-            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic")
+      @ActivationConfigProperty(propertyName = "destination", propertyValue = TOPIC_NAME),
+      @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Topic")
     })
     public static class EventReplicator implements MessageListener {
 
@@ -88,7 +79,7 @@ public class EventReplicationTest {
             try {
                 LOGGER.fine("Re-firing event");
                 EventMessage eventMessage = message.getBody(EventMessage.class);
-                event.select(eventMessage.getQualifiers()).fire(eventMessage.getEvent());
+                event.select(eventMessage.qualifiers()).fire(eventMessage.event());
             } catch (JMSException jmsException) {
                 throw new EJBException(jmsException);
             }

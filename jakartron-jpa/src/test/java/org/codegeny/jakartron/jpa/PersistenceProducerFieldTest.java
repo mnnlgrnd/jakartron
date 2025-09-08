@@ -20,24 +20,26 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.sql.DataSourceDefinition;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Qualifier;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 @DataSourceDefinition(name = "mydb", className = "org.h2.jdbcx.JdbcDataSource", url = "jdbc:h2:mem:mydb")
 @PersistenceUnitDefinition(unitName = "tests", nonJtaDataSourceName = "mydb", managedClasses = President.class, properties = {
-        @PersistenceUnitDefinition.Property(name = "javax.persistence.schema-generation.database.action", value = "create")
+  @PersistenceUnitDefinition.Property(name = "jakarta.persistence.schema-generation.database.action", value = "create")
 })
 public class PersistenceProducerFieldTest {
 

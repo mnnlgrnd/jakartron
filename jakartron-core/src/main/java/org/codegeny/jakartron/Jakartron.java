@@ -9,9 +9,9 @@ package org.codegeny.jakartron;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,18 +20,14 @@ package org.codegeny.jakartron;
  * #L%
  */
 
-import org.codegeny.jakartron.concurrent.ConcurrenceProducer;
-import org.codegeny.jakartron.jndi.BeanManagerProducer;
-import org.codegeny.jakartron.jndi.JNDIExtension;
-import org.codegeny.jakartron.logging.LoggerProducer;
+import jakarta.annotation.Priority;
+import jakarta.decorator.Decorator;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.interceptor.Interceptor;
 
-import javax.annotation.Priority;
-import javax.decorator.Decorator;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.enterprise.inject.spi.Extension;
-import javax.interceptor.Interceptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -39,6 +35,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import org.codegeny.jakartron.concurrent.ConcurrenceProducer;
+import org.codegeny.jakartron.jndi.BeanManagerProducer;
+import org.codegeny.jakartron.jndi.JNDIExtension;
+import org.codegeny.jakartron.logging.LoggerProducer;
 
 public final class Jakartron {
 
@@ -48,8 +49,8 @@ public final class Jakartron {
 
     public static SeContainerInitializer initialize(Stream<Class<?>> classes) {
         SeContainerInitializer initializer = SeContainerInitializer.newInstance()
-                .addExtensions(CoreExtension.class, JNDIExtension.class)
-                .addBeanClasses(ConcurrenceProducer.class, LoggerProducer.class, BeanManagerProducer.class);
+          .addExtensions(CoreExtension.class, JNDIExtension.class)
+          .addBeanClasses(ConcurrenceProducer.class, LoggerProducer.class, BeanManagerProducer.class);
         Set<Class<?>> visited = new HashSet<>();
         classes.forEach(c -> scanAnnotations(c, initializer, visited));
         return initializer;
@@ -75,7 +76,7 @@ public final class Jakartron {
 
         if (Customizer.class.isAssignableFrom(type) && !Modifier.isAbstract(type.getModifiers())) {
             try {
-                type.asSubclass(Customizer.class).newInstance().customize(initializer);
+                type.asSubclass(Customizer.class).getDeclaredConstructor().newInstance().customize(initializer);
             } catch (Exception exception) {
                 throw new IllegalStateException("Can not instantiate `" + type.getName() + "'", exception);
             }
@@ -124,9 +125,9 @@ public final class Jakartron {
         }
 
         return Stream.<Stream<Class<?>>>of(
-                Stream.of(type.getSuperclass()),
-                Stream.of(type.getInterfaces()),
-                Stream.of(type.getAnnotations()).map(Annotation::annotationType)
+          Stream.of(type.getSuperclass()),
+          Stream.of(type.getInterfaces()),
+          Stream.of(type.getAnnotations()).map(Annotation::annotationType)
         ).flatMap(Function.identity()).reduce(initializer, (i, t) -> scanAnnotations(t, i, visited), (a, b) -> null);
     }
 

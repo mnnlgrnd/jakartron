@@ -20,32 +20,38 @@ package org.codegeny.jakartron.jdbc;
  * #L%
  */
 
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.annotation.sql.DataSourceDefinitions;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.inject.Singleton;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+
+import javax.sql.DataSource;
+import javax.sql.XADataSource;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DataSourceConnectionFactory;
-import org.apache.commons.dbcp2.managed.BasicManagedDataSource;
-import org.codegeny.jakartron.Annotations;
-import org.codegeny.jakartron.jndi.JNDI;
 import org.kohsuke.MetaInfServices;
 
-import javax.annotation.sql.DataSourceDefinition;
-import javax.annotation.sql.DataSourceDefinitions;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import javax.enterprise.inject.spi.WithAnnotations;
-import javax.inject.Singleton;
-import javax.sql.DataSource;
-import javax.sql.XADataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.codegeny.jakartron.Annotations;
+import org.codegeny.jakartron.jndi.JNDI;
+import org.codegeny.jakartron.managed.BasicManagedDataSource;
 
 @MetaInfServices
 public final class XADataSourceIntegration implements Extension {
@@ -55,16 +61,17 @@ public final class XADataSourceIntegration implements Extension {
     private final Set<DataSourceDefinition> dataSources = new HashSet<>();
 
     public void process(@Observes @WithAnnotations({DataSourceDefinition.class, DataSourceDefinitions.class}) ProcessAnnotatedType<?> event) {
-        Annotations.findAnnotations(event.getAnnotatedType().getJavaClass(), DataSourceDefinition.class, Annotations.Expander.SUPER_CLASS, Annotations.Expander.META_ANNOTATIONS).forEach(dataSources::add);
+        Annotations.findAnnotations(event.getAnnotatedType().getJavaClass(), DataSourceDefinition.class, Annotations.Expander.SUPER_CLASS, Annotations.Expander.META_ANNOTATIONS)
+          .forEach(dataSources::add);
     }
 
     public void makeDataSourceInjectable(@Observes AfterBeanDiscovery event) {
         dataSources.forEach(dataSource -> event.<BasicDataSource>addBean()
-                .types(Object.class, DataSource.class, XADataSource.class)
-                .produceWith(instance -> createDataSource(dataSource, instance))
-                .destroyWith((instance, context) -> closeDataSource(instance))
-                .qualifiers(JNDI.Literal.of(dataSource.name()))
-                .scope(Singleton.class)
+          .types(Object.class, DataSource.class, XADataSource.class)
+          .produceWith(instance -> createBasicDataSource(dataSource, instance))
+          .destroyWith((instance, context) -> closeDataSource(instance))
+          .qualifiers(JNDI.Literal.of(dataSource.name()))
+          .scope(Singleton.class)
         );
     }
 
@@ -82,7 +89,7 @@ public final class XADataSourceIntegration implements Extension {
         }
     }
 
-    private BasicDataSource createDataSource(DataSourceDefinition definition, Instance<Object> instance) {
+    private BasicDataSource createBasicDataSource(DataSourceDefinition definition, Instance<Object> instance) {
 
         Map<String, Object> map = new HashMap<>();
         addIfNotEmpty(map, "url", definition.url(), "");
@@ -107,9 +114,9 @@ public final class XADataSourceIntegration implements Extension {
                 if (!XADataSource.class.isAssignableFrom(klass)) {
                     throw new CreationException("DataSource is transactional but does not implement XADataSource");
                 }
-                XADataSource xaDataSource = klass.asSubclass(XADataSource.class).newInstance();
+                XADataSource xaDataSource = klass.asSubclass(XADataSource.class).getDeclaredConstructor().newInstance();
                 BeanUtils.copyProperties(xaDataSource, map);
-                BasicManagedDataSource managedPool = new BasicManagedDataSource();
+                BasicManagedDataSource managedPool = new BasicManagedDataSource(definition);
                 managedPool.setXaDataSourceInstance(xaDataSource);
                 managedPool.setTransactionManager(instance.select(TransactionManager.class).get());
                 managedPool.setTransactionSynchronizationRegistry(instance.select(TransactionSynchronizationRegistry.class).get());
@@ -121,7 +128,7 @@ public final class XADataSourceIntegration implements Extension {
                 if (!DataSource.class.isAssignableFrom(klass)) {
                     throw new CreationException("The provided class does not implement DataSource");
                 }
-                DataSource dataSource = klass.asSubclass(DataSource.class).newInstance();
+                DataSource dataSource = klass.asSubclass(DataSource.class).getDeclaredConstructor().newInstance();
                 BeanUtils.copyProperties(dataSource, map);
                 pool = new SimpleBasicDataSource(dataSource);
             }

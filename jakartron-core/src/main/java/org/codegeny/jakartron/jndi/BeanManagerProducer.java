@@ -20,9 +20,9 @@ package org.codegeny.jakartron.jndi;
  * #L%
  */
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 @Dependent
 public class BeanManagerProducer {

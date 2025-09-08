@@ -20,11 +20,16 @@ package org.codegeny.jakartron.properties;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.BeforeShutdown;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
 import java.util.Properties;
+
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class SystemPropertiesExtension implements Extension {
@@ -37,7 +42,7 @@ public final class SystemPropertiesExtension implements Extension {
 
     public void setSystemProperties(@Observes @WithAnnotations(SystemProperty.class) ProcessAnnotatedType<?> event) {
         event.getAnnotatedType().getAnnotations(SystemProperty.class)
-                .forEach(systemProperty -> System.setProperty(systemProperty.key(), systemProperty.value()));
+          .forEach(systemProperty -> System.setProperty(systemProperty.key(), systemProperty.value()));
     }
 
     public void restoreSystemProperties(@Observes BeforeShutdown event) {

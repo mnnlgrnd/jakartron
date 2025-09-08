@@ -20,17 +20,19 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.mockito.EnableAutoMocks;
-import org.dbunit.database.DatabaseConfig;
-import org.junit.jupiter.api.Test;
+import jakarta.annotation.Resource;
+import jakarta.annotation.sql.DataSourceDefinition;
 
-import javax.annotation.Resource;
-import javax.annotation.sql.DataSourceDefinition;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.dbunit.database.DatabaseConfig;
+import org.junit.jupiter.api.Test;
+
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.mockito.EnableAutoMocks;
 
 @ExtendWithJakartron
 @DataSourceDefinition(name = "java:/jdbc/test", className = "org.h2.jdbcx.JdbcDataSource", url = "jdbc:h2:mem:test")

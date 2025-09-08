@@ -20,18 +20,20 @@ package org.codegeny.jakartron.selenium;
  * #L%
  */
 
-import org.codegeny.jakartron.servlet.Base;
-import org.openqa.selenium.WebDriver;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.stream.Stream;
+
+import org.openqa.selenium.WebDriver;
+
+import org.codegeny.jakartron.servlet.Base;
 
 @Priority(Interceptor.Priority.APPLICATION)
 @Dependent
@@ -49,23 +51,23 @@ public class BasicLoginInterceptor {
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         Stream.of(context.getMethod(), context.getMethod().getDeclaringClass())
-                .filter(annotated -> annotated.isAnnotationPresent(BasicLogin.class))
-                .map(annotated -> annotated.getAnnotation(BasicLogin.class))
-                .findFirst()
-                .ifPresent(this::basicLogin);
+          .filter(annotated -> annotated.isAnnotationPresent(BasicLogin.class))
+          .map(annotated -> annotated.getAnnotation(BasicLogin.class))
+          .findFirst()
+          .ifPresent(this::basicLogin);
         return context.proceed();
     }
 
     private void basicLogin(BasicLogin basicLogin) {
         try {
             URI loginURI = new URI(
-                    uri.getScheme(),
-                    basicLogin.name() + ":" + basicLogin.password(),
-                    uri.getHost(),
-                    uri.getPort(),
-                    uri.getPath(),
-                    uri.getQuery(),
-                    uri.getFragment()
+              uri.getScheme(),
+              basicLogin.name() + ":" + basicLogin.password(),
+              uri.getHost(),
+              uri.getPort(),
+              uri.getPath(),
+              uri.getQuery(),
+              uri.getFragment()
             );
             webDriver.get(loginURI.toASCIIString());
         } catch (URISyntaxException uriSyntaxException) {

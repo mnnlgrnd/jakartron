@@ -20,37 +20,41 @@ package org.codegeny.jakartron.servlet;
  * #L%
  */
 
-import org.apache.jasper.servlet.JspServlet;
-import org.apache.tomcat.util.scan.Constants;
-import org.codegeny.jakartron.CoreExtension;
-import org.eclipse.jetty.annotations.AnnotationConfiguration;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.util.resource.ResourceCollection;
-import org.eclipse.jetty.util.security.Credential;
-import org.eclipse.jetty.webapp.Configuration;
-import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.webapp.WebInfConfiguration;
-import org.jboss.weld.bean.builtin.BeanManagerProxy;
-import org.jboss.weld.module.web.servlet.WeldInitialListener;
-import org.jboss.weld.module.web.servlet.WeldTerminalListener;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.inject.Singleton;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Singleton;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
+
+import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.util.scan.Constants;
+import org.eclipse.jetty.ee10.annotations.AnnotationConfiguration;
+import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.webapp.Configurations;
+import org.eclipse.jetty.ee10.webapp.JettyWebXmlConfiguration;
+import org.eclipse.jetty.ee10.webapp.MetaInfConfiguration;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.ee10.webapp.WebInfConfiguration;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.security.UserStore;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.eclipse.jetty.util.security.Credential;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.module.web.servlet.WeldInitialListener;
+import org.jboss.weld.module.web.servlet.WeldTerminalListener;
 
 /**
  * Simple Servlet integration which starts/stops a jetty server on a random available port and fire a ServletContext
@@ -69,12 +73,12 @@ final class ServletProducer {
     @Base
     public URI uri(InjectionPoint injectionPoint, Server server) {
         return injectionPoint.getQualifiers().stream()
-                .filter(Base.class::isInstance)
-                .map(Base.class::cast)
-                .map(Base::value)
-                .map(server.getURI()::resolve)
-                .findFirst()
-                .orElseThrow(InternalError::new);
+          .filter(Base.class::isInstance)
+          .map(Base.class::cast)
+          .map(Base::value)
+          .map(server.getURI()::resolve)
+          .findFirst()
+          .orElseThrow(InternalError::new);
     }
 
     @Produces
@@ -93,44 +97,46 @@ final class ServletProducer {
     @Singleton
     private Server startServer(WebAppContext webAppContext, BeanManager beanManager) throws Exception {
         Server server = new Server(0);
-        Configuration.ClassList.setServerDefault(server)
-                .addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
+        Configurations.setServerDefault(server);
+        //		  .add(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
         server.setHandler(webAppContext);
         server.start();
-        beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
+        //		beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
         LOGGER.info(() -> String.format("Started server on %s", server.getURI()));
         return server;
     }
 
     @Produces
     private WebAppContext webAppContext(BeanManager beanManager, LoginService loginService) throws Exception {
-        //WebAppContext webAppContext = new WebAppContext(Resource.newClassPathResource("META-INF/resources"), "/");
-        WebAppContext webAppContext = new WebAppContext(System.getProperty("java.io.tmpdir"), "/");
+        ResourceFactory factory = ResourceFactory.root();
+        List<Resource> baseResources = new ArrayList<>();
 
-        List<org.eclipse.jetty.util.resource.Resource> baseResources = new ArrayList<>();
-        baseResources.add(org.eclipse.jetty.util.resource.Resource.newClassPathResource("/"));
-        baseResources.add(org.eclipse.jetty.util.resource.Resource.newClassPathResource("/META-INF/resources"));
+        baseResources.add(factory.newClassLoaderResource("/", false));
+        baseResources.add(factory.newClassLoaderResource("/META-INF/resources", false));
         File user = new File(System.getProperty("user.dir"));
         File main = new File(user, "src/main/webapp");
         if (main.exists() && main.isDirectory()) {
-            baseResources.add(org.eclipse.jetty.util.resource.Resource.newResource(main));
+            baseResources.add(factory.newResource(main.toPath()));
         }
         File test = new File(user, "src/test/webapp");
         if (test.exists() && test.isDirectory()) {
-            baseResources.add(org.eclipse.jetty.util.resource.Resource.newResource(test));
+            baseResources.add(factory.newResource(test.toPath()));
         }
-        webAppContext.setBaseResource(new ResourceCollection(baseResources.toArray(new org.eclipse.jetty.util.resource.Resource[0])));
-        
-        webAppContext.setAttribute(WebInfConfiguration.CONTAINER_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
+
+        baseResources.removeIf(Objects::isNull);
+        WebAppContext webAppContext = new WebAppContext(Paths.get(System.getProperty("java.io.tmpdir")).toUri().toASCIIString(), "/");
+        webAppContext.addConfiguration(new JettyWebXmlConfiguration(), new AnnotationConfiguration(), new WebInfConfiguration());
+        webAppContext.setBaseResource(ResourceFactory.combine(baseResources));
+        webAppContext.setAttribute(MetaInfConfiguration.CONTAINER_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
+        webAppContext.setAttribute(MetaInfConfiguration.WEBINF_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
         webAppContext.addEventListener(new WeldInitialListener(BeanManagerProxy.unwrap(beanManager)));
         webAppContext.addEventListener(new BridgingServletContextListener(beanManager));
-        //webAppContext.addEventListener(new WeldTerminalListener(BeanManagerProxy.unwrap(beanManager)));
         webAppContext.getSecurityHandler().setLoginService(loginService);
         webAppContext.addServlet(JspServlet.class, "*.jsp");
         webAppContext.addServlet(DefaultServlet.class, "/");
         beanManager.getEvent().select(WebAppContext.class).fire(webAppContext);
         webAppContext.addEventListener(new WeldTerminalListener(BeanManagerProxy.unwrap(beanManager)));
-        webAppContext.configure();
+        //		webAppContext.configure();
         return webAppContext;
     }
 

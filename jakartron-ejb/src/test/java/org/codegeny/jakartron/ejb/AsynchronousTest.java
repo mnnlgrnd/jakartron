@@ -20,16 +20,18 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.enterprise.context.ApplicationScoped;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class AsynchronousTest {
@@ -48,9 +50,9 @@ public class AsynchronousTest {
     public void test(AsynchronousBean asynchronousBean) throws Exception {
         Future<Integer> future = asynchronousBean.doSomething();
         Awaitility.await()
-                .atLeast(4, TimeUnit.SECONDS)
-                .atMost(6, TimeUnit.SECONDS)
-                .untilAsserted(() -> Assertions.assertTrue(future.isDone()));
+          .atLeast(4, TimeUnit.SECONDS)
+          .atMost(6, TimeUnit.SECONDS)
+          .untilAsserted(() -> Assertions.assertTrue(future.isDone()));
         Assertions.assertEquals(42, future.get());
     }
 }

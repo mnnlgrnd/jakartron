@@ -12,13 +12,21 @@ testing but certainly not for production-grade applications.
 Jakartron is split in multiple modules which represent sub-specifications of the Jakarta EE specification.
 
 In your `pom.xml`, import the module you need in your application:
+
 ```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-bom</artifactId>
+            <version>10.0.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <dependency>
             <groupId>org.codegeny.jakartron</groupId>
             <artifactId>jakartron-bom</artifactId>
-            <version>0.0.1</version>
+            <version>0.1.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -26,12 +34,14 @@ In your `pom.xml`, import the module you need in your application:
 </dependencyManagement>
 
 <dependencies>
+    <!--    Add needed JEE specs -->
     <dependency>
-        <groupId>jakarta.platform</groupId>
-        <artifactId>jakarta.jakartaee-api</artifactId>
-        <version>8.0.0</version>
+        <groupId>jakarta.persistence</groupId>
+        <artifactId>jakarta.persistence-api</artifactId>
         <scope>provided</scope>
     </dependency>
+
+    <!-- Add needed Jakartron modules-->
     <dependency>
         <groupId>org.codegeny.jakartron</groupId>
         <artifactId>jakartron-jpa</artifactId>
@@ -44,12 +54,14 @@ In your `pom.xml`, import the module you need in your application:
     </dependency>
 </dependencies>
 ```
+
 In your test:
+
 ```java
 @ExtendWithJakartron
 @DataSourceDefinition(name = "mydb", className = "org.h2.jdbcx.JdbcDataSource", minPoolSize = 5, maxPoolSize = 25, url = "jdbc:h2:mem:mydb")
 @PersistenceUnitDefinition(unitName = "tests", nonJtaDataSourceName = "mydb", transactionType = RESOURCE_LOCAL, managedClasses = JPADBTest.President.class, properties = {
-        @Property(name = "javax.persistence.schema-generation.database.action", value = "create")
+        @Property(name = "jakarta.persistence.schema-generation.database.action", value = "create")
 })
 public class JPATest {
 
@@ -110,6 +122,7 @@ Jakartron annotations follow closely the semantics of the initializing methods p
 All Jakartron annotations can be used as meta-annotations to group common features.
 
 Instead of doing this:
+
 ```java
 @AdditionalClasses({Foo.class, Bar.class, FooBar.class})
 @EnabledAlternatives(Baz.class)
@@ -119,7 +132,9 @@ public class MyFirstTest {}
 @EnabledAlternatives(Baz.class)
 public class MySecondTest {}
 ```
+
 Prefer creating a meta-annotation like this:
+
 ```java
 @AdditionalClasses({Foo.class, Bar.class, FooBar.class})
 @EnabledAlternatives(Baz.class)
@@ -132,21 +147,21 @@ public class MyFirstTest {}
 @EnableFoo
 public class MySecondTest {}
 ```
-Jakartron itselfs uses that feature for its `@EnableJPA`, `@EnableJTA`, `@EnableJMS`... annotations.
 
+Jakartron itself uses that feature for its `@EnableJPA`, `@EnableJTA`, `@EnableJMS`... annotations.
 
 ## Auto-discovery
 
 Jakartron modules are CDI extensions which are automatically discovered at runtime.
 
-If your tests contains CDI alternatives or other beans, they may conflict or create ambiguity with the CDI beans present in your application.
+If your tests contain CDI alternatives or other beans, they may conflict or create ambiguity with the CDI beans present in your application.
 Therefore, it is recommended (unless you know what you do) to disable auto-discovery in your test classpath by setting `bean-discovery-mode="none"` in your test `META-INF/beans.xml`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" bean-discovery-mode="none"
        xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-       xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_2_0.xsd"/>
+       xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_4_0.xsd"/>
 ```
 
 Putting this file in your test resources won't prevent CDI beans from being discovered in your main java folder.

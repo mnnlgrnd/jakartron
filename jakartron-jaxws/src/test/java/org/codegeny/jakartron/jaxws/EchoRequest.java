@@ -20,8 +20,8 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 @XmlType(name = "echoRequest")
 public class EchoRequest {

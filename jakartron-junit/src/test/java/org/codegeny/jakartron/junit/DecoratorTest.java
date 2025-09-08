@@ -20,16 +20,18 @@ package org.codegeny.jakartron.junit;
  * #L%
  */
 
-import org.codegeny.jakartron.DisableDiscovery;
+import jakarta.decorator.Decorator;
+import jakarta.decorator.Delegate;
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.decorator.Decorator;
-import javax.decorator.Delegate;
-import javax.inject.Inject;
-import javax.inject.Qualifier;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.codegeny.jakartron.DisableDiscovery;
 
 @ExtendWithJakartron
 @DisableDiscovery

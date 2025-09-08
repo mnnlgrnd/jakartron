@@ -20,41 +20,55 @@ package org.codegeny.jakartron.jaxrs;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.servlet.Base;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Vetoed;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.MediaType;
+
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
-import javax.enterprise.inject.Specializes;
-import javax.enterprise.inject.Vetoed;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
-import java.util.Collections;
-import java.util.Set;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.servlet.Base;
 
 @ExtendWithJakartron
 public class SpecializesTest {
 
+    public static class MyFooResource extends MyResource {
+
+        public MyFooResource() {
+            super("foo");
+        }
+    }
+
+    public static class MyBarResource extends MyResource {
+
+        public MyBarResource() {
+            super("bar");
+        }
+    }
+
     @ApplicationPath("/api")
     public static class MyApplication extends Application {
-
         @Override
-        public Set<Object> getSingletons() {
-            return Collections.singleton(new MyResource("foo"));
+        public Set<Class<?>> getClasses() {
+            return Set.of(MyFooResource.class);
         }
+
     }
 
     @Specializes
     @ApplicationPath("/api")
     public static class MyApplication2 extends MyApplication {
-
         @Override
-        public Set<Object> getSingletons() {
-            return Collections.singleton(new MyResource("bar"));
+        public Set<Class<?>> getClasses() {
+            return Set.of(MyBarResource.class);
         }
     }
 

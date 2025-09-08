@@ -20,15 +20,17 @@ package org.codegeny.jakartron;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.inject.Inject;
+
+import java.security.Principal;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
-import java.security.Principal;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class MocksTest {

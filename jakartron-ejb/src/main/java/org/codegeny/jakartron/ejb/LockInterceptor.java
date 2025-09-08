@@ -20,13 +20,14 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import javax.annotation.Priority;
-import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.LockType;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.Priority;
+import jakarta.ejb.AccessTimeout;
+import jakarta.ejb.ConcurrentAccessTimeoutException;
+import jakarta.ejb.LockType;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -34,7 +35,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Interceptor
-@javax.ejb.Lock
+@jakarta.ejb.Lock
 @Priority(Interceptor.Priority.PLATFORM_BEFORE)
 public class LockInterceptor {
 
@@ -66,12 +67,12 @@ public class LockInterceptor {
     private <A extends Annotation> Optional<A> getAnnotation(InvocationContext invocationContext, Class<A> annotationType) {
         A annotation = invocationContext.getMethod().getAnnotation(annotationType);
         return annotation != null
-                ? Optional.of(annotation)
-                : Optional.ofNullable(invocationContext.getMethod().getDeclaringClass().getAnnotation(annotationType));
+               ? Optional.of(annotation)
+               : Optional.ofNullable(invocationContext.getMethod().getDeclaringClass().getAnnotation(annotationType));
     }
 
     private Optional<Lock> getLock(InvocationContext invocationContext) {
-        return getAnnotation(invocationContext, javax.ejb.Lock.class).map(javax.ejb.Lock::value)
-                .map(lockType -> lockType == LockType.WRITE ? readWriteLock.writeLock() : readWriteLock.readLock());
+        return getAnnotation(invocationContext, jakarta.ejb.Lock.class).map(jakarta.ejb.Lock::value)
+          .map(lockType -> lockType == LockType.WRITE ? readWriteLock.writeLock() : readWriteLock.readLock());
     }
 }

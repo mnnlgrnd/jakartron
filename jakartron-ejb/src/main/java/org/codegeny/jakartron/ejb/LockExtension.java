@@ -20,13 +20,13 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.ejb.Lock;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.util.Nonbinding;
 
-import javax.ejb.Lock;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.util.Nonbinding;
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class LockExtension implements Extension {

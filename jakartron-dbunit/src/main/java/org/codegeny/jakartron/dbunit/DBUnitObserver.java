@@ -20,13 +20,14 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.TestEvent;
-import org.codegeny.jakartron.junit.TestPhase;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import org.codegeny.jakartron.junit.TestEvent;
+import org.codegeny.jakartron.junit.TestPhase;
 
 @ApplicationScoped
 public class DBUnitObserver {

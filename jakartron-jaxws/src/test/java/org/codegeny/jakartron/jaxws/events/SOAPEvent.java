@@ -20,19 +20,21 @@ package org.codegeny.jakartron.jaxws.events;
  * #L%
  */
 
-import org.xml.sax.InputSource;
+import jakarta.activation.DataHandler;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 
-import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.util.Map;
+
+import org.xml.sax.InputSource;
 
 public interface SOAPEvent {
 
     enum Direction {
 
-        INBOUND, OUTBOUND
+		INBOUND,
+		OUTBOUND
     }
 
     SOAPMessageContext getContext();

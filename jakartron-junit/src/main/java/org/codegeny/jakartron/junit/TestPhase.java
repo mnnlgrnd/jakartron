@@ -22,5 +22,8 @@ package org.codegeny.jakartron.junit;
 
 public enum TestPhase {
 
-    BEFORE_ALL, AFTER_ALL, BEFORE_EACH, AFTER_EACH
+    BEFORE_ALL,
+    AFTER_ALL,
+    BEFORE_EACH,
+    AFTER_EACH
 }

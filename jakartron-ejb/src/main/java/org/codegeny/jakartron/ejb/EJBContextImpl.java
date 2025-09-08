@@ -9,9 +9,9 @@ package org.codegeny.jakartron.ejb;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,27 +20,26 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.jndi.JNDI;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.MessageDrivenContext;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.TimerService;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
-import javax.ejb.EJBContext;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.MessageDrivenContext;
-import javax.ejb.SessionContext;
-import javax.ejb.TimerService;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import javax.security.enterprise.SecurityContext;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
-import javax.xml.rpc.handler.MessageContext;
 import java.security.Principal;
 import java.util.Map;
-import java.util.Properties;
+
+import org.codegeny.jakartron.jndi.JNDI;
 
 @Dependent
 public final class EJBContextImpl implements EJBContext, SessionContext, MessageDrivenContext {
@@ -64,11 +63,6 @@ public final class EJBContextImpl implements EJBContext, SessionContext, Message
 
     @Override
     public EJBObject getEJBObject() throws IllegalStateException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public MessageContext getMessageContext() throws IllegalStateException {
         throw new UnsupportedOperationException();
     }
 
@@ -97,27 +91,9 @@ public final class EJBContextImpl implements EJBContext, SessionContext, Message
         throw new UnsupportedOperationException();
     }
 
-    @Deprecated
-    @Override
-    public Properties getEnvironment() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    @Override
-    public java.security.Identity getCallerIdentity() {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public Principal getCallerPrincipal() throws IllegalStateException {
         return securityContext.getCallerPrincipal();
-    }
-
-    @Deprecated
-    @Override
-    public boolean isCallerInRole(java.security.Identity role) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -20,13 +20,14 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import javax.annotation.Priority;
-import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.Priority;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Asynchronous;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+
 import java.util.concurrent.Future;
 
 @Interceptor

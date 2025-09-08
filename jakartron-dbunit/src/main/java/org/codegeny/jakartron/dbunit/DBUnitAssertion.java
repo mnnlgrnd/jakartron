@@ -9,9 +9,9 @@ package org.codegeny.jakartron.dbunit;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,14 +20,19 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
+import java.sql.SQLException;
+import java.util.stream.Stream;
+
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.*;
+import org.dbunit.dataset.Column;
+import org.dbunit.dataset.Columns;
+import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.ITableMetaData;
+import org.dbunit.dataset.SortedTable;
 import org.dbunit.operation.DatabaseOperation;
-
-import java.sql.SQLException;
-import java.util.stream.Stream;
 
 public abstract class DBUnitAssertion extends DatabaseOperation {
 
@@ -78,4 +83,3 @@ public abstract class DBUnitAssertion extends DatabaseOperation {
         }
     }
 }
-

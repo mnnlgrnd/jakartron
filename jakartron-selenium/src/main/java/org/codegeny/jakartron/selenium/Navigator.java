@@ -20,16 +20,17 @@ package org.codegeny.jakartron.selenium;
  * #L%
  */
 
-import org.codegeny.jakartron.servlet.Base;
-import org.openqa.selenium.WebDriver;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.io.UncheckedIOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
+
+import org.openqa.selenium.WebDriver;
+
+import org.codegeny.jakartron.servlet.Base;
 
 @ApplicationScoped
 public class Navigator {
@@ -59,10 +60,6 @@ public class Navigator {
     }
 
     private static String encode(String param) {
-        try {
-            return URLEncoder.encode(param, "UTF-8");
-        } catch (UnsupportedEncodingException exception) {
-            throw new UncheckedIOException(exception);
-        }
+        return URLEncoder.encode(param, StandardCharsets.UTF_8);
     }
 }

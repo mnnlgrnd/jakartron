@@ -9,9 +9,9 @@ package org.codegeny.jakartron.jms;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,42 @@ package org.codegeny.jakartron.jms;
  * limitations under the License.
  * #L%
  */
+
+import jakarta.annotation.Resource;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.inject.Singleton;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
+import jakarta.jms.XAConnectionFactory;
+import jakarta.jms.XAJMSContext;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionScoped;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -37,31 +73,13 @@ import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue;
 import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
-import org.codegeny.jakartron.CoreExtension;
-import org.codegeny.jakartron.jndi.JNDI;
 import org.kohsuke.MetaInfServices;
 
-import javax.annotation.Resource;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Singleton;
-import javax.jms.Queue;
-import javax.jms.*;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionScoped;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
+import org.codegeny.jakartron.CoreExtension;
+import org.codegeny.jakartron.jndi.JNDI;
 
 @MetaInfServices
-public class JMSExtension implements Extension  {
+public class JMSExtension implements Extension {
 
     public static class JMSConnectionFactoryLiteral extends AnnotationLiteral<JMSConnectionFactory> implements JMSConnectionFactory {
 
@@ -89,45 +107,48 @@ public class JMSExtension implements Extension  {
 
     public void processResources(@Observes @WithAnnotations(Resource.class) ProcessAnnotatedType<?> event) {
         event.configureAnnotatedType()
-                .filterFields(f -> f.isAnnotationPresent(Resource.class) && !f.getAnnotation(Resource.class).lookup().isEmpty() && Queue.class.isAssignableFrom(f.getJavaMember().getType()))
-                .forEach(f -> queues.add(f.getAnnotated().getAnnotation(Resource.class).lookup()));
+          .filterFields(f -> f.isAnnotationPresent(Resource.class) && !f.getAnnotation(Resource.class).lookup().isEmpty() && Queue.class.isAssignableFrom(f.getJavaMember().getType()))
+          .forEach(f -> queues.add(f.getAnnotated().getAnnotation(Resource.class).lookup()));
 
         event.configureAnnotatedType()
-                .filterFields(f -> f.isAnnotationPresent(Resource.class) && !f.getAnnotation(Resource.class).lookup().isEmpty() && Topic.class.isAssignableFrom(f.getJavaMember().getType()))
-                .forEach(f -> topics.add(f.getAnnotated().getAnnotation(Resource.class).lookup()));
+          .filterFields(f -> f.isAnnotationPresent(Resource.class) && !f.getAnnotation(Resource.class).lookup().isEmpty() && Topic.class.isAssignableFrom(f.getJavaMember().getType()))
+          .forEach(f -> topics.add(f.getAnnotated().getAnnotation(Resource.class).lookup()));
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event) {
         event.<ActiveMQConnectionFactory>addBean()
-                .types(Object.class, ConnectionFactory.class, XAConnectionFactory.class, ActiveMQConnectionFactory.class)
-                .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE, JNDI.Literal.of("connectionFactory"))
-                .produceWith(instance -> ActiveMQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(), Collections.singletonMap(TransportConstants.SERVER_ID_PROP_NAME, instance.select(ActiveMQServer.class).get().getIdentity()))))
-                .disposeWith((instance, context) -> instance.close());
+          .types(Object.class, ConnectionFactory.class, XAConnectionFactory.class, ActiveMQConnectionFactory.class)
+          .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE, JNDI.Literal.of("connectionFactory"))
+          .produceWith(instance -> ActiveMQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                                                                    Collections.singletonMap(TransportConstants.SERVER_ID_PROP_NAME,
+                                                                                                                                                             instance.select(ActiveMQServer.class).get()
+                                                                                                                                                               .getIdentity()))))
+          .disposeWith((instance, context) -> instance.close());
         event.<JMSContext>addBean()
-                .types(Object.class, JMSContext.class)
-                .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE)
-                .produceWith(instance -> instance.select(ConnectionFactory.class).get().createContext())
-                .disposeWith((instance, context) -> instance.close());
+          .types(Object.class, JMSContext.class)
+          .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE)
+          .produceWith(instance -> instance.select(ConnectionFactory.class).get().createContext())
+          .disposeWith((instance, context) -> instance.close());
         event.<JMSContext>addBean()
-                .types(Object.class, JMSContext.class)
-                .qualifiers(new JMSConnectionFactoryLiteral("java:/JmsXA"), Any.Literal.INSTANCE)
-                .produceWith(instance -> instance.select(XAJMSContext.class).get());
+          .types(Object.class, JMSContext.class)
+          .qualifiers(new JMSConnectionFactoryLiteral("java:/JmsXA"), Any.Literal.INSTANCE)
+          .produceWith(instance -> instance.select(XAJMSContext.class).get());
         event.<XAJMSContext>addBean()
-                .types(Object.class, XAJMSContext.class)
-                .scope(TransactionScoped.class)
-                .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE)
-                .produceWith(this::xaJMSContext)
-                .disposeWith((instance, context) -> instance.close());
+          .types(Object.class, XAJMSContext.class)
+          .scope(TransactionScoped.class)
+          .qualifiers(Default.Literal.INSTANCE, Any.Literal.INSTANCE)
+          .produceWith(this::xaJMSContext)
+          .disposeWith((instance, context) -> instance.close());
         queues.forEach(name -> event.addBean()
-                .types(Object.class, Destination.class, Queue.class, ActiveMQDestination.class, ActiveMQQueue.class)
-                .scope(ApplicationScoped.class)
-                .qualifiers(Any.Literal.INSTANCE, JNDI.Literal.of(name))
-                .createWith(context -> ActiveMQDestination.createQueue(name)));
+          .types(Object.class, Destination.class, Queue.class, ActiveMQDestination.class, ActiveMQQueue.class)
+          .scope(ApplicationScoped.class)
+          .qualifiers(Any.Literal.INSTANCE, JNDI.Literal.of(name))
+          .createWith(context -> ActiveMQDestination.createQueue(name)));
         topics.forEach(name -> event.addBean()
-                .types(Object.class, Destination.class, Topic.class, ActiveMQDestination.class, ActiveMQTopic.class)
-                .scope(ApplicationScoped.class)
-                .qualifiers(Any.Literal.INSTANCE, JNDI.Literal.of(name))
-                .createWith(context -> ActiveMQDestination.createTopic(name)));
+          .types(Object.class, Destination.class, Topic.class, ActiveMQDestination.class, ActiveMQTopic.class)
+          .scope(ApplicationScoped.class)
+          .qualifiers(Any.Literal.INSTANCE, JNDI.Literal.of(name))
+          .createWith(context -> ActiveMQDestination.createTopic(name)));
     }
 
     private XAJMSContext xaJMSContext(Instance<Object> instance) {
@@ -142,38 +163,38 @@ public class JMSExtension implements Extension  {
 
     public void start(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.<ActiveMQServer>addBean()
-                .types(ActiveMQServer.class)
-                .scope(Singleton.class)
-                .createWith(context -> {
-                    String serverId = Integer.toString(SERVER_ID.incrementAndGet());
-                    Map<String, Object> params = Collections.singletonMap(TransportConstants.SERVER_ID_PROP_NAME, serverId);
-                    Configuration configuration = new ConfigurationImpl()
-                            .setSecurityEnabled(false)
-                            .setPersistenceEnabled(false)
-                            .setJMXManagementEnabled(false)
-                            .addAddressesSetting("#", new AddressSettings()
-                                    .setAutoCreateQueues(true)
-                                    .setDeadLetterAddress(new SimpleString("dlq"))
-                                    .setExpiryAddress(new SimpleString("dlq"))
-                                    .setMaxDeliveryAttempts(3)
-                                    .setRedeliveryDelay(0)
-                            )
-                            .addQueueConfiguration(new QueueConfiguration("dlq"))
-                            .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));
-                    ActiveMQServer server = ActiveMQServers.newActiveMQServer(configuration);
-                    server.setIdentity(serverId);
-                    try {
-                        server.start();
-                    }catch (Exception exception) {
-                        throw new RuntimeException(exception);
-                    }
-                    beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
-                    LOGGER.fine(() -> String.format("Started broker #%s", serverId));
-                    return server;
-                });
-   }
+          .types(ActiveMQServer.class)
+          .scope(Singleton.class)
+          .createWith(context -> {
+              String serverId = Integer.toString(SERVER_ID.incrementAndGet());
+              Map<String, Object> params = Collections.singletonMap(TransportConstants.SERVER_ID_PROP_NAME, serverId);
+              Configuration configuration = new ConfigurationImpl()
+                .setSecurityEnabled(false)
+                .setPersistenceEnabled(false)
+                .setJMXManagementEnabled(false)
+                .addAddressSetting("#", new AddressSettings()
+                  .setAutoCreateQueues(true)
+                  .setDeadLetterAddress(SimpleString.of("dlq"))
+                  .setExpiryAddress(SimpleString.of("dlq"))
+                  .setMaxDeliveryAttempts(3)
+                  .setRedeliveryDelay(0)
+                )
+                .addQueueConfiguration(QueueConfiguration.of("dlq"))
+                .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));
+              ActiveMQServer server = ActiveMQServers.newActiveMQServer(configuration);
+              server.setIdentity(serverId);
+              try {
+                  server.start();
+              } catch (Exception exception) {
+                  throw new RuntimeException(exception);
+              }
+              beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
+              LOGGER.fine(() -> String.format("Started broker #%s", serverId));
+              return server;
+          });
+    }
 
-   public void process(@Observes @WithAnnotations(JMSDestinationDefinition.class) ProcessAnnotatedType<?> event) {
+    public void process(@Observes @WithAnnotations(JMSDestinationDefinition.class) ProcessAnnotatedType<?> event) {
         for (JMSDestinationDefinition definition : event.getAnnotatedType().getAnnotations(JMSDestinationDefinition.class)) {
             if (definition.interfaceName().equals(Queue.class.getName())) {
                 queues.add(definition.name());
@@ -183,5 +204,5 @@ public class JMSExtension implements Extension  {
                 throw new IllegalArgumentException("Unsupported destination " + definition.interfaceName());
             }
         }
-   }
+    }
 }

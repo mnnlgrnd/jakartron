@@ -20,7 +20,8 @@ package org.codegeny.jakartron.jndi;
  * #L%
  */
 
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
+
 import javax.naming.Context;
 import javax.naming.spi.InitialContextFactory;
 import java.util.Hashtable;
@@ -29,6 +30,10 @@ public final class CDIInitialContextFactory implements InitialContextFactory {
 
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) {
-        return new CDIContext(CDI.current().getBeanManager());
+        //		ClassLoader old = Thread.currentThread().getContextClassLoader();
+        //		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        var beanManager = CDI.current().getBeanManager();
+        //		Thread.currentThread().setContextClassLoader(old);
+        return new CDIContext(beanManager);
     }
 }

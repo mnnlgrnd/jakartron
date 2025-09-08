@@ -20,17 +20,23 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
-import org.codegeny.jakartron.wrapper.InjectionTargetWrapper;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.spi.AnnotatedField;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.ProcessInjectionTarget;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceUnit;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceUnit;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+
+import org.codegeny.jakartron.wrapper.InjectionTargetWrapper;
 
 final class PersistenceInjectionTarget<T> extends InjectionTargetWrapper<T> {
 

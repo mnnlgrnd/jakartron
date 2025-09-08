@@ -20,18 +20,37 @@ package org.codegeny.jakartron.servlet;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebServlet;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
-import javax.servlet.*;
-import javax.servlet.annotation.HandlesTypes;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebServlet;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public class ServletExtension implements Extension {
@@ -42,8 +61,8 @@ public class ServletExtension implements Extension {
 
     public void createInitializers(@Observes BeforeBeanDiscovery event) {
         StreamSupport.stream(ServiceLoader.load(ServletContainerInitializer.class).spliterator(), false)
-                .filter(s -> s.getClass().isAnnotationPresent(HandlesTypes.class))
-                .forEach(s -> initializers.put(s, new HashSet<>()));
+          .filter(s -> s.getClass().isAnnotationPresent(HandlesTypes.class))
+          .forEach(s -> initializers.put(s, new HashSet<>()));
     }
 
     public void processInitializer(@Observes ProcessAnnotatedType<?> event) {
@@ -67,10 +86,10 @@ public class ServletExtension implements Extension {
 
     public void addObserver(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.<ServletContextEvent>addObserverMethod()
-                .priority(Integer.MIN_VALUE)
-                .observedType(ServletContextEvent.class)
-                .qualifiers(Initialized.Literal.INSTANCE)
-                .notifyWith(e -> register(e.getEvent().getServletContext(), beanManager));
+          .priority(Integer.MIN_VALUE)
+          .observedType(ServletContextEvent.class)
+          .qualifiers(Initialized.Literal.INSTANCE)
+          .notifyWith(e -> register(e.getEvent().getServletContext(), beanManager));
     }
 
     private void register(ServletContext servletContext, BeanManager beanManager) throws ServletException {

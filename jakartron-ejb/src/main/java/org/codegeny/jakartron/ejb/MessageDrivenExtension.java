@@ -20,12 +20,16 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.jca.ConfigureResourceAdapter;
-import org.kohsuke.MetaInfServices;
+import jakarta.ejb.MessageDriven;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 
-import javax.ejb.MessageDriven;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
 import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -37,6 +41,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.kohsuke.MetaInfServices;
+
+import org.codegeny.jakartron.jca.ConfigureResourceAdapter;
 
 @MetaInfServices
 public final class MessageDrivenExtension implements Extension {
@@ -56,32 +64,32 @@ public final class MessageDrivenExtension implements Extension {
 
     public void registerMDB(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.<ConfigureResourceAdapter>addObserverMethod()
-                .observedType(ConfigureResourceAdapter.class)
-                .notifyWith(e -> messageDrivenBeans.forEach(messageDrivenBean -> {
-                    MessageDriven messageDriven = messageDrivenBean.getAnnotation(MessageDriven.class);
-                    Class<?> listenerInterface;
-                    if (messageDriven.messageListenerInterface().equals(Object.class)) {
-                        Set<Class<?>> interfaces = getAllInterfaces(messageDrivenBean.getJavaClass())
-                                .distinct()
-                                .filter(i -> !i.getPackage().getName().startsWith("javax.ejb"))
-                                .filter(i -> !Arrays.asList(Serializable.class, Externalizable.class).contains(i))
-                                .collect(Collectors.toSet());
-                        if (interfaces.size() != 1) {
-                            throw new RuntimeException("MDB must implement a single interface or specify @MessageDriven.listenerInterface()");
-                        }
-                        listenerInterface = interfaces.iterator().next();
-                    } else {
-                        listenerInterface = messageDriven.messageListenerInterface();
-                    }
+          .observedType(ConfigureResourceAdapter.class)
+          .notifyWith(e -> messageDrivenBeans.forEach(messageDrivenBean -> {
+              MessageDriven messageDriven = messageDrivenBean.getAnnotation(MessageDriven.class);
+              Class<?> listenerInterface;
+              if (messageDriven.messageListenerInterface().equals(Object.class)) {
+                  Set<Class<?>> interfaces = getAllInterfaces(messageDrivenBean.getJavaClass())
+                    .distinct()
+                    .filter(i -> !i.getPackage().getName().startsWith("jakarta.ejb"))
+                    .filter(i -> !Arrays.asList(Serializable.class, Externalizable.class).contains(i))
+                    .collect(Collectors.toSet());
+                  if (interfaces.size() != 1) {
+                      throw new RuntimeException("MDB must implement a single interface or specify @MessageDriven.listenerInterface()");
+                  }
+                  listenerInterface = interfaces.iterator().next();
+              } else {
+                  listenerInterface = messageDriven.messageListenerInterface();
+              }
 
-                    Properties properties = new Properties();
-                    Stream.of(messageDriven.activationConfig()).forEach(a -> properties.setProperty(a.propertyName(), evaluate(a.propertyValue())));
-                    e.getEvent().addMessageEndpoint(listenerInterface, beanManager.createInstance().select(messageDrivenBean.getJavaClass()), properties, messageDrivenBean.getJavaClass());
-                }));
+              Properties properties = new Properties();
+              Stream.of(messageDriven.activationConfig()).forEach(a -> properties.setProperty(a.propertyName(), evaluate(a.propertyValue())));
+              e.getEvent().addMessageEndpoint(listenerInterface, beanManager.createInstance().select(messageDrivenBean.getJavaClass()), properties, messageDrivenBean.getJavaClass());
+          }));
     }
 
     private String evaluate(String value) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         Matcher matcher = PLACEHOLDER.matcher(value);
         while (matcher.find()) {
             matcher.appendReplacement(buffer, System.getProperty(matcher.group(1)));
@@ -91,9 +99,9 @@ public final class MessageDrivenExtension implements Extension {
 
     private Stream<Class<?>> getAllInterfaces(Class<?> klass) {
         return klass == null ? Stream.empty() : Stream.<Stream<Class<?>>>of(
-                klass.isInterface() ? Stream.of(klass) : Stream.empty(),
-                getAllInterfaces(klass.getSuperclass()),
-                Stream.of(klass.getInterfaces()).flatMap(this::getAllInterfaces)
+          klass.isInterface() ? Stream.of(klass) : Stream.empty(),
+          getAllInterfaces(klass.getSuperclass()),
+          Stream.of(klass.getInterfaces()).flatMap(this::getAllInterfaces)
         ).flatMap(Function.identity());
     }
 }

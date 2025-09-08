@@ -9,9 +9,9 @@ package org.codegeny.jakartron.jta;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,16 @@ package org.codegeny.jakartron.jta;
  * #L%
  */
 
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.UserTransaction;
+
 import com.arjuna.ats.jta.TransactionManager;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.kohsuke.MetaInfServices;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.UserTransaction;
-
-@MetaInfServices(Service.class)
-final class TransactionServicesImpl implements TransactionServices {
+@MetaInfServices(Service.class) final class TransactionServicesImpl implements TransactionServices {
 
     @Override
     public void registerSynchronization(Synchronization synchronizedObserver) {

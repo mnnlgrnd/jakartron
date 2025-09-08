@@ -9,9 +9,9 @@ package org.codegeny.jakartron.validation;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,14 +20,14 @@ package org.codegeny.jakartron.validation;
  * #L%
  */
 
-import org.codegeny.jakartron.jndi.JNDI;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
+import org.codegeny.jakartron.jndi.JNDI;
 
 public final class ValidationProducer {
 

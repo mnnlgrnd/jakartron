@@ -20,15 +20,15 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.AdditionalClasses;
-import org.codegeny.jakartron.jca.EnableJCA;
-import org.codegeny.jakartron.jta.EnableJTA;
-import org.codegeny.jakartron.security.EnableSecurity;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.codegeny.jakartron.AdditionalClasses;
+import org.codegeny.jakartron.jca.EnableJCA;
+import org.codegeny.jakartron.jta.EnableJTA;
+import org.codegeny.jakartron.security.EnableSecurity;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

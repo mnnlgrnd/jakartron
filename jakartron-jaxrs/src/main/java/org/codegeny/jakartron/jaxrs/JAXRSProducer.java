@@ -20,37 +20,37 @@ package org.codegeny.jakartron.jaxrs;
  * #L%
  */
 
-import org.codegeny.jakartron.Internal;
-import org.codegeny.jakartron.servlet.Base;
-import org.codegeny.jakartron.servlet.Initialized;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.sse.SseEventSource;
+
+import java.lang.annotation.Annotation;
+import java.net.URI;
+
 import org.jboss.resteasy.cdi.CdiInjectorFactory;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.EventContext;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.sse.SseEventSource;
-import java.lang.annotation.Annotation;
-import java.net.URI;
+import org.codegeny.jakartron.Internal;
+import org.codegeny.jakartron.servlet.Base;
+import org.codegeny.jakartron.servlet.Initialized;
 
 @Dependent
 public final class JAXRSProducer {
@@ -90,18 +90,18 @@ public final class JAXRSProducer {
         context.setInitParameter(ResteasyContextParameters.RESTEASY_USE_CONTAINER_FORM_PARAMS, "true");
         context.setInitParameter(ResteasyContextParameters.RESTEASY_ROLE_BASED_SECURITY, "true");
         beanManager.getBeans(Application.class).stream()
-                .map(Bean::getBeanClass)
-                .filter(applicationClass -> applicationClass.isAnnotationPresent(ApplicationPath.class))
-                .filter(Application.class::isAssignableFrom)
-                .<Class<? extends Application>>map(applicationClass -> applicationClass.asSubclass(Application.class))
-                .forEach(applicationClass -> configureApplication(context, applicationClass));
+		  .map(Bean::getBeanClass)
+		  .filter(applicationClass -> applicationClass.isAnnotationPresent(ApplicationPath.class))
+		  .filter(Application.class::isAssignableFrom)
+		  .<Class<? extends Application>>map(applicationClass -> applicationClass.asSubclass(Application.class))
+		  .forEach(applicationClass -> configureApplication(context, applicationClass));
     }
 
     private void configureApplication(ServletContext context, Class<? extends Application> applicationClass) {
         String prefix = "/".concat(applicationClass.getAnnotation(ApplicationPath.class).value().replaceAll("^/*|/*$", ""));
         ServletRegistration.Dynamic servlet = context.addServlet("resteasy", HttpServlet30Dispatcher.class);
         servlet.addMapping(prefix.equals("/") ? prefix : prefix.concat("/*"));
-        servlet.setInitParameter("javax.ws.rs.Application", applicationClass.getName());
+		servlet.setInitParameter("jakarta.ws.rs.Application", applicationClass.getName());
         servlet.setInitParameter(ResteasyContextParameters.RESTEASY_SERVLET_MAPPING_PREFIX, prefix);
         servlet.setMultipartConfig(new MultipartConfigElement(System.getProperty("java.io.tmpdir")));
         servlet.setAsyncSupported(true);

@@ -20,12 +20,13 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import com.sun.xml.ws.api.server.BoundEndpoint;
-import com.sun.xml.ws.transport.http.servlet.ServletModule;
+import jakarta.servlet.ServletContext;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sun.xml.ws.api.server.BoundEndpoint;
+import com.sun.xml.ws.transport.http.servlet.ServletModule;
 
 final class ServletContextModule extends ServletModule {
 

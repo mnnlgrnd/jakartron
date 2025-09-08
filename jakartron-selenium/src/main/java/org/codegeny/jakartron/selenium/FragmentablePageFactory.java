@@ -9,9 +9,9 @@ package org.codegeny.jakartron.selenium;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +19,6 @@ package org.codegeny.jakartron.selenium;
  * limitations under the License.
  * #L%
  */
-
-import org.openqa.selenium.SearchContext;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
-import org.openqa.selenium.support.pagefactory.DefaultFieldDecorator;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -37,6 +29,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
+import org.openqa.selenium.support.pagefactory.DefaultFieldDecorator;
 
 public final class FragmentablePageFactory {
 
@@ -89,12 +89,12 @@ public final class FragmentablePageFactory {
     // find the best constructor for the given parameters (matching by type)
     private static <T> T instantiate(Class<T> type, Object... parameters) {
         return Stream.of(type.getConstructors())
-                .sorted(Comparator.<Constructor<?>>comparingInt(Constructor::getParameterCount).reversed())
-                .filter(c -> Stream.of(c.getParameterTypes()).allMatch(t -> Stream.of(parameters).anyMatch(t::isInstance)))
-                .findFirst()
-                .map(c -> instantiate(c, Stream.of(c.getParameterTypes()).map(t -> Stream.of(parameters).filter(t::isInstance).findFirst().orElseThrow(InternalError::new)).toArray()))
-                .map(type::cast)
-                .orElseThrow(() -> new IllegalStateException(String.format("Can't find supported constructor for %s and parameters %s", type, Arrays.asList(parameters))));
+          .sorted(Comparator.<Constructor<?>>comparingInt(Constructor::getParameterCount).reversed())
+          .filter(c -> Stream.of(c.getParameterTypes()).allMatch(t -> Stream.of(parameters).anyMatch(t::isInstance)))
+          .findFirst()
+          .map(c -> instantiate(c, Stream.of(c.getParameterTypes()).map(t -> Stream.of(parameters).filter(t::isInstance).findFirst().orElseThrow(InternalError::new)).toArray()))
+          .map(type::cast)
+          .orElseThrow(() -> new IllegalStateException(String.format("Can't find supported constructor for %s and parameters %s", type, Arrays.asList(parameters))));
     }
 
     private static <T> T instantiate(Constructor<T> constructor, Object... parameters) {

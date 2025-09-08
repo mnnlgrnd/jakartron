@@ -20,18 +20,23 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.ProcessInjectionTarget;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 
-import javax.ejb.MessageDriven;
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class EJBExtension implements Extension {

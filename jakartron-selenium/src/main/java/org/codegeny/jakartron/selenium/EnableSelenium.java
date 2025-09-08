@@ -20,11 +20,11 @@ package org.codegeny.jakartron.selenium;
  * #L%
  */
 
-import org.codegeny.jakartron.AdditionalClasses;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import org.codegeny.jakartron.AdditionalClasses;
 
 @Retention(RUNTIME)
 @AdditionalClasses({WebDriverProducer.class, Navigator.class, BasicLoginInterceptor.class})

@@ -9,9 +9,9 @@ package org.codegeny.jakartron.servlet;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,18 +20,20 @@ package org.codegeny.jakartron.servlet;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Scanner;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class ServletTest {
@@ -55,11 +57,13 @@ public class ServletTest {
     }
 
     @Test
-    public void test(@Base("/test") URL servletURL, @Base("/page.jsp") URL jspURL, @Base("/jsp") URL jsp2URL, @Base("foo.txt") URL foo) throws IOException {
-        try (Scanner scanner = new Scanner(servletURL.openStream())) {
-            Assertions.assertTrue(scanner.hasNextLine());
-            Assertions.assertEquals("hello world!", scanner.nextLine());
-        }
+	public void testAll(@Base("/test") URL servletURL, @Base("/page.jsp") URL jspURL, @Base("/jsp") URL jsp2URL, @Base("foo.txt") URL foo) throws IOException {
+		testDefaultServlet(servletURL, foo);
+		testJspServlet(jspURL, jsp2URL);
+	}
+
+	@Test
+	public void testJspServlet(@Base("/page.jsp") URL jspURL, @Base("/jsp") URL jsp2URL) throws IOException {
 
         try (Scanner scanner = new Scanner(jspURL.openStream())) {
             Assertions.assertTrue(scanner.hasNextLine());
@@ -70,6 +74,14 @@ public class ServletTest {
             Assertions.assertTrue(scanner.hasNextLine());
             Assertions.assertEquals("<span>2</span>", scanner.nextLine());
         }
+	}
+
+	@Test
+	public void testDefaultServlet(@Base("/test") URL servletURL, @Base("foo.txt") URL foo) throws IOException {
+		try (Scanner scanner = new Scanner(servletURL.openStream())) {
+			Assertions.assertTrue(scanner.hasNextLine());
+			Assertions.assertEquals("hello world!", scanner.nextLine());
+		}
 
         try (Scanner scanner = new Scanner(foo.openStream())) {
             Assertions.assertTrue(scanner.hasNextLine());

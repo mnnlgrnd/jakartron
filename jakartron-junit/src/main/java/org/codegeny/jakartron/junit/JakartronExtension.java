@@ -20,15 +20,16 @@ package org.codegeny.jakartron.junit;
  * #L%
  */
 
-import org.codegeny.jakartron.Jakartron;
-import org.junit.jupiter.api.extension.*;
-import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
-import org.junit.platform.commons.util.ReflectionUtils;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.AnnotatedParameter;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
-import javax.enterprise.context.control.RequestContextController;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.TestInstanceFactory;
+import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
+import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
+import org.junit.platform.commons.util.ReflectionUtils;
+
+import org.codegeny.jakartron.Jakartron;
+
 public final class JakartronExtension implements TestInstanceFactory, BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver, TestInstancePreDestroyCallback {
 
     private static final Namespace NAMESPACE = Namespace.create(JakartronExtension.class);
@@ -44,20 +61,21 @@ public final class JakartronExtension implements TestInstanceFactory, BeforeAllC
 
     @Override
     public void afterAll(ExtensionContext context) {
-        getBeanManager(context).ifPresent(beanManager -> beanManager.fireEvent(context, TestEvent.Literal.of(TestPhase.AFTER_ALL)));
+		getBeanManager(context).ifPresent(beanManager -> beanManager.getEvent().select(TestEvent.Literal.of(TestPhase.AFTER_ALL)).fire(context));
         getContainer(context).ifPresent(SeContainer::close);
     }
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) {
         try {
-            SeContainer container = Jakartron.initialize(Stream.concat(Stream.of(extensionContext.getRequiredTestClass()), ReflectionUtils.findNestedClasses(extensionContext.getRequiredTestClass(), t -> true).stream()))
-                    .addExtensions(new TestExtension(extensionContext.getRequiredTestClass()))
-                    .addBeanClasses(hierarchy(extensionContext.getRequiredTestClass()))
-                    .initialize();
+			SeContainer container =
+			  Jakartron.initialize(Stream.concat(Stream.of(extensionContext.getRequiredTestClass()), ReflectionUtils.findNestedClasses(extensionContext.getRequiredTestClass(), t -> true).stream()))
+				.addExtensions(new TestExtension(extensionContext.getRequiredTestClass()))
+				.addBeanClasses(hierarchy(extensionContext.getRequiredTestClass()))
+				.initialize();
             getStore(extensionContext).put(SeContainer.class, container);
             getStore(extensionContext).put(AnnotatedType.class, container.getBeanManager().createAnnotatedType(extensionContext.getRequiredTestClass()));
-            container.getBeanManager().fireEvent(extensionContext, TestEvent.Literal.of(TestPhase.BEFORE_ALL));
+			container.getBeanManager().getEvent().select(TestEvent.Literal.of(TestPhase.BEFORE_ALL)).fire(extensionContext);
         } catch (RuntimeException exception) {
             LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
             throw exception;
@@ -76,10 +94,10 @@ public final class JakartronExtension implements TestInstanceFactory, BeforeAllC
     @Override
     public void afterEach(ExtensionContext extensionContext) {
         getBeanManager(extensionContext)
-                .ifPresent(beanManager -> {
-                    beanManager.fireEvent(extensionContext, TestEvent.Literal.of(TestPhase.AFTER_EACH));
-                    getStore(extensionContext).get(RequestContextController.class, RequestContextController.class).deactivate();
-                });
+		  .ifPresent(beanManager -> {
+			  beanManager.getEvent().select(TestEvent.Literal.of(TestPhase.AFTER_EACH)).fire(extensionContext);
+			  getStore(extensionContext).get(RequestContextController.class, RequestContextController.class).deactivate();
+		  });
     }
 
     @Override
@@ -90,10 +108,10 @@ public final class JakartronExtension implements TestInstanceFactory, BeforeAllC
             requestContextController.activate();
             AnnotatedType<?> annotatedType = getStore(extensionContext).get(AnnotatedType.class, AnnotatedType.class);
             annotatedType.getMethods().stream()
-                    .filter(m -> m.getJavaMember().equals(extensionContext.getRequiredTestMethod()))
-                    .findFirst()
-                    .ifPresent(m -> getStore(extensionContext).put(AnnotatedMethod.class, m));
-            beanManager.fireEvent(extensionContext, TestEvent.Literal.of(TestPhase.BEFORE_EACH));
+			  .filter(m -> m.getJavaMember().equals(extensionContext.getRequiredTestMethod()))
+			  .findFirst()
+			  .ifPresent(m -> getStore(extensionContext).put(AnnotatedMethod.class, m));
+			beanManager.getEvent().select(TestEvent.Literal.of(TestPhase.BEFORE_EACH)).fire(extensionContext);
         });
     }
 

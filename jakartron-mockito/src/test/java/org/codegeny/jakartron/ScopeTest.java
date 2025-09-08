@@ -20,14 +20,15 @@ package org.codegeny.jakartron;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.mockito.EnableAutoMocks;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.mockito.EnableAutoMocks;
 
 @ExtendWithJakartron
 @EnableAutoMocks

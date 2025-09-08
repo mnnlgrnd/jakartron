@@ -20,25 +20,26 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.servlet.Base;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import jakarta.jws.WebService;
+import jakarta.xml.ws.BindingProvider;
+
 import org.junit.jupiter.api.Test;
 
-import javax.jws.WebService;
-import javax.xml.ws.BindingProvider;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.servlet.Base;
 
 @ExtendWithJakartron
 public class BareTest {
 
     @WebService(
-            name = "EchoWebService",
-            targetNamespace = "urn:echo",
-            serviceName = "EchoService",
-            portName = "EchoPort",
-            endpointInterface = "org.codegeny.jakartron.jaxws.EchoPort",
-            wsdlLocation = "org/codegeny/jakartron/jaxws/echo.wsdl"
+	  name = "EchoWebService",
+	  targetNamespace = "urn:echo",
+	  serviceName = "EchoService",
+	  portName = "EchoPort",
+	  endpointInterface = "org.codegeny.jakartron.jaxws.EchoPort",
+	  wsdlLocation = "org/codegeny/jakartron/jaxws/echo.wsdl"
     )
     public static class EchoWebService implements EchoPort {
 

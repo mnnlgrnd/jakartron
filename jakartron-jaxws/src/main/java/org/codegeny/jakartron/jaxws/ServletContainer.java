@@ -20,11 +20,11 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import com.sun.xml.ws.api.server.Container;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.sun.xml.ws.api.server.Container;
 
 final class ServletContainer extends Container {
 

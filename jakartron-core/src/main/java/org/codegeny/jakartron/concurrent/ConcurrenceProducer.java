@@ -20,17 +20,32 @@ package org.codegeny.jakartron.concurrent;
  * #L%
  */
 
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ManageableThread;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.enterprise.concurrent.Trigger;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Disposes;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
+
 import org.codegeny.jakartron.Internal;
 import org.codegeny.jakartron.jndi.JNDI;
-
-import javax.enterprise.concurrent.*;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 @Dependent
 public class ConcurrenceProducer {
@@ -46,7 +61,20 @@ public class ConcurrenceProducer {
     @JNDI(MANAGED_THREAD_FACTORY_JNDI_NAME)
     @ApplicationScoped
     public ManagedThreadFactory createManagedThreadFactory() {
-        return ManageableThreadImpl::new;
+        // FIXME
+        return new ManagedThreadFactory() {
+            @Override
+            public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
+                return new ForkJoinWorkerThread(pool) {
+
+                };
+            }
+
+            @Override
+            public Thread newThread(Runnable r) {
+                return new ManageableThreadImpl(r);
+            }
+        };
     }
 
     @Produces
@@ -80,6 +108,57 @@ public class ConcurrenceProducer {
         @Override
         public <V> ScheduledFuture<V> schedule(Callable<V> callable, Trigger trigger) {
             throw new UnsupportedOperationException();
+        }
+
+        // FIXME
+        @Override
+        public <U> CompletableFuture<U> completedFuture(U u) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletionStage<U> completedStage(U u) {
+            return null;
+        }
+
+        @Override
+        public <T> CompletableFuture<T> copy(CompletableFuture<T> completableFuture) {
+            return null;
+        }
+
+        @Override
+        public <T> CompletionStage<T> copy(CompletionStage<T> completionStage) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> failedFuture(Throwable throwable) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletionStage<U> failedStage(Throwable throwable) {
+            return null;
+        }
+
+        @Override
+        public ContextService getContextService() {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> newIncompleteFuture() {
+            return null;
+        }
+
+        @Override
+        public CompletableFuture<Void> runAsync(Runnable runnable) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
+            return null;
         }
     }
 

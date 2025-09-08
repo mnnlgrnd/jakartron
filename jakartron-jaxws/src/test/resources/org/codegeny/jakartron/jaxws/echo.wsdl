@@ -17,54 +17,54 @@
   #L%
 -->
 <definitions name="EchoService" targetNamespace="urn:echo"
-             xmlns="http://schemas.xmlsoap.org/wsdl/"
-             xmlns:tns="urn:echo"
-             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-             xmlns:xs="http://www.w3.org/2001/XMLSchema">
-    <types>
-        <xs:schema version="1.0" targetNamespace="urn:echo" xmlns:tns="urn:echo"
-                   xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <xs:element name="echoRequest" type="tns:echoRequest"/>
-            <xs:element name="echoResponse" type="tns:echoResponse"/>
-            <xs:complexType name="echoRequest">
-                <xs:sequence>
-                    <xs:element name="message" type="xs:string"/>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="echoResponse">
-                <xs:sequence>
-                    <xs:element name="message" type="xs:string"/>
-                </xs:sequence>
-            </xs:complexType>
-        </xs:schema>
-    </types>
-    <message name="echoRequest">
-        <part name="parameters" element="tns:echoRequest"/>
-    </message>
-    <message name="echoResponse">
-        <part name="parameters" element="tns:echoResponse"/>
-    </message>
-    <portType name="EchoPort">
-        <operation name="echo">
-            <input message="tns:echoRequest"/>
-            <output message="tns:echoResponse"/>
-        </operation>
-    </portType>
-    <binding name="EchoPortBinding" type="tns:EchoPort">
-        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
-        <operation name="echo">
-            <soap:operation soapAction=""/>
-            <input>
-                <soap:body use="literal"/>
-            </input>
-            <output>
-                <soap:body use="literal"/>
-            </output>
-        </operation>
-    </binding>
-    <service name="EchoService">
-        <port name="EchoPort" binding="tns:EchoPortBinding">
-            <soap:address location="http://localhost:5555/echo"/>
-        </port>
-    </service>
+			 xmlns="http://schemas.xmlsoap.org/wsdl/"
+			 xmlns:tns="urn:echo"
+			 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+			 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<types>
+		<xs:schema version="1.0" targetNamespace="urn:echo" xmlns:tns="urn:echo"
+				   xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xs:element name="echoRequest" type="tns:echoRequest"/>
+			<xs:element name="echoResponse" type="tns:echoResponse"/>
+			<xs:complexType name="echoRequest">
+				<xs:sequence>
+					<xs:element name="message" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="echoResponse">
+				<xs:sequence>
+					<xs:element name="message" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+		</xs:schema>
+	</types>
+	<message name="echoRequest">
+		<part name="parameters" element="tns:echoRequest"/>
+	</message>
+	<message name="echoResponse">
+		<part name="parameters" element="tns:echoResponse"/>
+	</message>
+	<portType name="EchoPort">
+		<operation name="echo">
+			<input message="tns:echoRequest"/>
+			<output message="tns:echoResponse"/>
+		</operation>
+	</portType>
+	<binding name="EchoPortBinding" type="tns:EchoPort">
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+		<operation name="echo">
+			<soap:operation soapAction=""/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+		</operation>
+	</binding>
+	<service name="EchoService">
+		<port name="EchoPort" binding="tns:EchoPortBinding">
+			<soap:address location="http://localhost:5555/echo"/>
+		</port>
+	</service>
 </definitions>

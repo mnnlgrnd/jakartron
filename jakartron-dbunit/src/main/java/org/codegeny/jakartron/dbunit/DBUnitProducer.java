@@ -9,9 +9,9 @@ package org.codegeny.jakartron.dbunit;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,15 +20,18 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
+
 import org.dbunit.operation.DatabaseOperation;
 import org.dbunit.operation.DeleteAllOperation;
 import org.dbunit.operation.InsertOperation;
 import org.dbunit.operation.UpdateOperation;
-import org.codegeny.jakartron.dbunit.DBUnitAssertion.*;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import org.codegeny.jakartron.dbunit.DBUnitAssertion.NonStrict;
+import org.codegeny.jakartron.dbunit.DBUnitAssertion.NonStrictUnordered;
+import org.codegeny.jakartron.dbunit.DBUnitAssertion.Strict;
 
 @Dependent
 public class DBUnitProducer {

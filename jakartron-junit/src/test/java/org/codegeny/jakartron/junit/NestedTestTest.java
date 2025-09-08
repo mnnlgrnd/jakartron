@@ -1,8 +1,9 @@
 package org.codegeny.jakartron.junit;
 
-import org.codegeny.jakartron.DisableDiscovery;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import org.codegeny.jakartron.DisableDiscovery;
 
 @ExtendWithJakartron
 @DisableDiscovery

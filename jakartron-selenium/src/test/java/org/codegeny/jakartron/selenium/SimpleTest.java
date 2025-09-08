@@ -20,11 +20,12 @@ package org.codegeny.jakartron.selenium;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class SimpleTest {

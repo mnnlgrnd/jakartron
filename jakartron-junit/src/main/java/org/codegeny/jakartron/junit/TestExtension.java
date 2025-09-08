@@ -20,18 +20,27 @@ package org.codegeny.jakartron.junit;
  * #L%
  */
 
-import org.junit.jupiter.api.Nested;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.literal.InjectLiteral;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterTypeDiscovery;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.ProcessBeanAttributes;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.literal.InjectLiteral;
-import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Nested;
 
 public final class TestExtension implements Extension {
 
@@ -58,17 +67,17 @@ public final class TestExtension implements Extension {
         event.veto();
     }
 
-//    public void processTestClass(@Observes @WithAnnotations(Testable.class) ProcessAnnotatedType<?> event) {
-//        event.configureAnnotatedType().add(PriorityLiteral.DEFAULT);
-//        testTypes.add(event.getAnnotatedType().getJavaClass());
-//    }
+    //    public void processTestClass(@Observes @WithAnnotations(Testable.class) ProcessAnnotatedType<?> event) {
+    //        event.configureAnnotatedType().add(PriorityLiteral.DEFAULT);
+    //        testTypes.add(event.getAnnotatedType().getJavaClass());
+    //    }
 
     public void processTestAttributes(@Observes ProcessBeanAttributes<?> attributes) {
         for (Class<?> current = this.testClass; current != null; current = current.getEnclosingClass()) {
             if (attributes.getBeanAttributes().getTypes().contains(current)) {
                 attributes.configureBeanAttributes()
-                        .scope(TestScoped.class)
-                        .alternative(true);
+                  .scope(TestScoped.class)
+                  .alternative(true);
             }
         }
     }
@@ -87,12 +96,12 @@ public final class TestExtension implements Extension {
         event.addBean().read(type).createWith(creationalContext -> {
             Constructor<?> constructor = type.getJavaClass().getConstructors()[0];
             Object[] args = Stream.of(constructor.getParameters())
-                    .map(Parameter::getType)
-                    .map(t -> {
-                        Bean<?> testBean = beanManager.resolve(beanManager.getBeans(t));
-                        return beanManager.getReference(testBean, t, creationalContext);
-                    })
-                    .toArray();
+              .map(Parameter::getType)
+              .map(t -> {
+                  Bean<?> testBean = beanManager.resolve(beanManager.getBeans(t));
+                  return beanManager.getReference(testBean, t, creationalContext);
+              })
+              .toArray();
             try {
                 return (X) constructor.newInstance(args);
             } catch (Exception exception) {

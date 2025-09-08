@@ -20,13 +20,14 @@ package org.codegeny.jakartron.jaxws.events;
  * #L%
  */
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
+
 import javax.xml.namespace.QName;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.util.Collections;
 import java.util.Set;
 
@@ -57,9 +58,9 @@ public class EventHandler implements SOAPHandler<SOAPMessageContext> {
         QName portName = (QName) context.get(MessageContext.WSDL_PORT);
         QName operation = (QName) context.get(MessageContext.WSDL_OPERATION);
         (outbound ? outboundEvent : inboundEvent).select(
-                new ServiceName.Literal(serviceName.toString()),
-                new PortName.Literal(portName.toString()),
-                new Operation.Literal(operation.toString())
+		  new ServiceName.Literal(serviceName.toString()),
+		  new PortName.Literal(portName.toString()),
+		  new Operation.Literal(operation.toString())
         ).fire(() -> context);
         return true;
     }

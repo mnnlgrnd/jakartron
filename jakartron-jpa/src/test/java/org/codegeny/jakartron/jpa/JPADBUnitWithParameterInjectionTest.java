@@ -20,38 +20,40 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
-import org.codegeny.jakartron.dbunit.DBUnit;
-import org.codegeny.jakartron.dbunit.DBUnitConnection;
-import org.codegeny.jakartron.jpa.PersistenceUnitDefinition.Property;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import static jakarta.persistence.spi.PersistenceUnitTransactionType.JTA;
+
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.dbunit.database.DatabaseConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.sql.DataSourceDefinition;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.util.Nonbinding;
-import javax.inject.Provider;
-import javax.inject.Qualifier;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
+import org.codegeny.jakartron.dbunit.DBUnit;
+import org.codegeny.jakartron.dbunit.DBUnitConnection;
+import org.codegeny.jakartron.jpa.PersistenceUnitDefinition.Property;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 @DataSourceDefinition(name = "mydb", className = "org.h2.jdbcx.JdbcDataSource", minPoolSize = 1, maxPoolSize = 2, url = "jdbc:h2:mem:mydb")
 @PersistenceUnitDefinition(unitName = "tests", jtaDataSourceName = "mydb", transactionType = JTA, managedClasses = President.class, properties = {
-        @Property(name = "javax.persistence.schema-generation.database.action", value = "create"),
-        @Property(name = "hibernate.dialect", value = "org.hibernate.dialect.H2Dialect")
+  @Property(name = "jakarta.persistence.schema-generation.database.action", value = "create"),
+  @Property(name = "hibernate.dialect", value = "org.hibernate.dialect.H2Dialect")
 })
 @DBUnitConnection(jndi = "mydb", properties = {
-        @DBUnitConnection.Property(name = DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, value = "false"),
-        @DBUnitConnection.Property(name = DatabaseConfig.PROPERTY_DATATYPE_FACTORY, value = "org.dbunit.ext.h2.H2DataTypeFactory"),
+  @DBUnitConnection.Property(name = DatabaseConfig.FEATURE_CASE_SENSITIVE_TABLE_NAMES, value = "false"),
+  @DBUnitConnection.Property(name = DatabaseConfig.PROPERTY_DATATYPE_FACTORY, value = "org.dbunit.ext.h2.H2DataTypeFactory"),
 })
 public class JPADBUnitWithParameterInjectionTest {
 

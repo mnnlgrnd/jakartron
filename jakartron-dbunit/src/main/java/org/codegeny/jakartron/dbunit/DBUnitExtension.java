@@ -20,20 +20,19 @@ package org.codegeny.jakartron.dbunit;
  * #L%
  */
 
-import org.codegeny.jakartron.jndi.JNDI;
-import org.dbunit.DatabaseUnitException;
-import org.dbunit.database.DatabaseDataSourceConnection;
-import org.dbunit.database.IDatabaseConnection;
-import org.kohsuke.MetaInfServices;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.InjectionException;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.literal.NamedLiteral;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.InjectionException;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.literal.NamedLiteral;
-import javax.enterprise.inject.spi.*;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -42,6 +41,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import org.dbunit.DatabaseUnitException;
+import org.dbunit.database.DatabaseDataSourceConnection;
+import org.dbunit.database.IDatabaseConnection;
+import org.kohsuke.MetaInfServices;
+
+import org.codegeny.jakartron.jndi.JNDI;
 
 @MetaInfServices
 public class DBUnitExtension implements Extension {
@@ -58,11 +64,11 @@ public class DBUnitExtension implements Extension {
 
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         connections.forEach(connection -> event.<IDatabaseConnection>addBean()
-                .types(IDatabaseConnection.class)
-                .qualifiers(Any.Literal.INSTANCE, NamedLiteral.of(connection.name()))
-                .produceWith(instance -> produce(connection, instance))
-                .disposeWith((c, instance) -> dispose(c))
-                .scope(ApplicationScoped.class)
+          .types(IDatabaseConnection.class)
+          .qualifiers(Any.Literal.INSTANCE, NamedLiteral.of(connection.name()))
+          .produceWith(instance -> produce(connection, instance))
+          .disposeWith((c, instance) -> dispose(c))
+          .scope(ApplicationScoped.class)
         );
     }
 

@@ -20,13 +20,15 @@ package org.codegeny.jakartron.security;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.enterprise.inject.IllegalProductException;
+import jakarta.security.enterprise.SecurityContext;
+
+import java.security.Principal;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.enterprise.inject.IllegalProductException;
-import javax.security.enterprise.SecurityContext;
-import java.security.Principal;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class RunAsInterceptorTest {

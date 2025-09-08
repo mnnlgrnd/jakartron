@@ -19,11 +19,12 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import com.sun.xml.ws.api.ResourceLoader;
+import jakarta.servlet.ServletContext;
 
-import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import com.sun.xml.ws.api.ResourceLoader;
 
 final class ServletContextResourceLoader extends ResourceLoader {
 

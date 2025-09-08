@@ -20,35 +20,60 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
-import org.codegeny.jakartron.QualifierInstance;
-import org.hibernate.Session;
-import org.kohsuke.MetaInfServices;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterDeploymentValidation;
+import jakarta.enterprise.inject.spi.AfterTypeDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.ProcessInjectionTarget;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.enterprise.inject.spi.configurator.AnnotatedFieldConfigurator;
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.PersistenceProperty;
+import jakarta.persistence.PersistenceUnit;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.spi.PersistenceProviderResolverHolder;
+import jakarta.persistence.spi.PersistenceUnitInfo;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.spi.*;
-import javax.enterprise.inject.spi.configurator.AnnotatedFieldConfigurator;
-import javax.enterprise.util.AnnotationLiteral;
-import javax.enterprise.util.Nonbinding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.*;
-import javax.persistence.spi.ClassTransformer;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.hibernate.Session;
+import org.kohsuke.MetaInfServices;
+
+import org.codegeny.jakartron.Annotations;
+import org.codegeny.jakartron.QualifierInstance;
 
 /**
  * Poorman's JPA integration which adds @Inject on fields annotated with @PersistenceContext or @PersistenceUnit and
@@ -65,18 +90,20 @@ public final class JPAIntegration implements Extension {
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.addQualifier(PersistenceUnit.class);
         event.configureQualifier(PersistenceContext.class)
-                .filterMethods(m -> m.getJavaMember().getReturnType().isArray())
-                .forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
+          .filterMethods(m -> m.getJavaMember().getReturnType().isArray())
+          .forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
     }
 
     public void defineUnits(@Observes @WithAnnotations({PersistenceUnitDefinition.class, PersistenceUnitDefinitions.class}) ProcessAnnotatedType<?> event) {
-        event.getAnnotatedType().getAnnotations(PersistenceUnitDefinition.class).stream().map(PersistenceUnitInfoImpl::new).forEach(persistenceUnitInfos::add);
+        Annotations.findAnnotations(event.getAnnotatedType().getJavaClass(), PersistenceUnitDefinition.class, Annotations.Expander.SUPER_CLASS, Annotations.Expander.META_ANNOTATIONS)
+          .map(PersistenceUnitInfoImpl::new)
+          .forEach(persistenceUnitInfos::add);
     }
 
     public void makeInjectable(@Observes @WithAnnotations({PersistenceUnit.class, PersistenceContext.class}) ProcessAnnotatedType<?> event, BeanManager beanManager) {
         event.configureAnnotatedType()
-                .filterFields(f -> f.isAnnotationPresent(PersistenceUnit.class) || f.isAnnotationPresent(PersistenceContext.class))
-                .forEach(f -> makeInjectable(f, beanManager));
+          .filterFields(f -> f.isAnnotationPresent(PersistenceUnit.class) || f.isAnnotationPresent(PersistenceContext.class))
+          .forEach(f -> makeInjectable(f, beanManager));
     }
 
     public void registerAlternative(@Observes @Priority(-50) AfterTypeDiscovery event) {
@@ -105,56 +132,54 @@ public final class JPAIntegration implements Extension {
     public void fireConfigurationEvent(@Observes @Priority(100) AfterDeploymentValidation event, BeanManager beanManager) {
         beanManager.getEvent().select(PersistenceUnitDefinitionEvent.class).fire(persistenceUnitInfos::add);
         persistenceUnits.stream()
-                .filter(q -> !beanManager.createInstance().select(EntityManagerFactory.class, q.getQualifier()).get().isOpen())
-                .forEach(q -> event.addDeploymentProblem(new Exception("Cannot initialize EntityManagerFactory " + q.getQualifier())));
+          .filter(q -> !beanManager.createInstance().select(EntityManagerFactory.class, q.getQualifier()).get().isOpen())
+          .forEach(q -> event.addDeploymentProblem(new Exception("Cannot initialize EntityManagerFactory " + q.getQualifier())));
     }
 
     private void addPersistenceUnit(PersistenceUnit persistenceUnit, AfterBeanDiscovery event, BeanManager beanManager) {
         event.<EntityManagerFactory>addBean()
-                .alternative(true)
-                .createWith(context -> createEntityManagerFactory(persistenceUnit, beanManager))
-                .destroyWith((entityManagerFactory, context) -> entityManagerFactory.close())
-                .scope(ApplicationScoped.class)
-                .types(Object.class, EntityManagerFactory.class)
-                .qualifiers(persistenceUnit, Any.Literal.INSTANCE);
+          .alternative(true)
+          .createWith(context -> createEntityManagerFactory(persistenceUnit, beanManager))
+          .destroyWith((entityManagerFactory, context) -> entityManagerFactory.close())
+          .scope(ApplicationScoped.class)
+          .types(Object.class, EntityManagerFactory.class)
+          .qualifiers(persistenceUnit, Any.Literal.INSTANCE);
     }
 
     private EntityManagerFactory createEntityManagerFactory(PersistenceUnit persistenceUnit, BeanManager beanManager) {
-        Map<?, ?> map = Collections.singletonMap("javax.persistence.bean.manager", beanManager);
+        Map<?, ?> map = Collections.singletonMap("jakarta.persistence.bean.manager", beanManager);
         return Stream.concat(beanManager.createInstance().select(PersistenceUnitInfo.class).stream(), persistenceUnitInfos.stream())
-                .filter(i -> i.getPersistenceUnitName().equals(persistenceUnit.unitName()))
-                .findFirst()
-                .map(unitInfo -> PersistenceProviderResolverHolder.getPersistenceProviderResolver()
-                        .getPersistenceProviders().stream()
-                        .findFirst()
-                        .orElseThrow(IllegalStateException::new)
-                        .createContainerEntityManagerFactory(unitInfo, map)
-                )
-                .orElseGet(() -> Persistence.createEntityManagerFactory(persistenceUnit.unitName(), map));
+          .filter(i -> i.getPersistenceUnitName().equals(persistenceUnit.unitName()))
+          .findFirst()
+          .map(unitInfo -> PersistenceProviderResolverHolder.getPersistenceProviderResolver()
+            .getPersistenceProviders().stream()
+            .findFirst()
+            .orElseThrow(IllegalStateException::new)
+            .createContainerEntityManagerFactory(unitInfo, map)
+          )
+          .orElseGet(() -> Persistence.createEntityManagerFactory(persistenceUnit.unitName(), map));
     }
 
     private void addPersistenceContext(PersistenceContext persistenceContext, AfterBeanDiscovery event) {
         Map<?, ?> properties = Stream.of(persistenceContext.properties()).collect(Collectors.toMap(PersistenceProperty::name, PersistenceProperty::value));
         event.<EntityManager>addBean()
-                .alternative(true)
-                .produceWith(instance -> instance.select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext)).get().createEntityManager(properties))
-                .disposeWith((entityManager, instance) -> entityManager.close())
-                .scope(toScope(persistenceContext.type()))
-                .types(Object.class, EntityManager.class, Session.class)
-                .qualifiers(persistenceContext, Any.Literal.INSTANCE);
+          .alternative(true)
+          .produceWith(instance -> instance.select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext)).get().createEntityManager(properties))
+          .disposeWith((entityManager, instance) -> entityManager.close())
+          .scope(toScope(persistenceContext.type()))
+          .types(Object.class, EntityManager.class, Session.class)
+          .qualifiers(persistenceContext, Any.Literal.INSTANCE);
     }
 
     private static Class<? extends Annotation> toScope(PersistenceContextType type) {
-        switch (type) {
-            case TRANSACTION:
+        return switch (type) {
+            case TRANSACTION ->
                 //EntityManagers DO NOT require a tx for reading
                 //return TransactionScoped.class;
-                return RequestScoped.class;
-            case EXTENDED:
-                return Dependent.class;
-            default:
-                throw new InternalError();
-        }
+              RequestScoped.class;
+            case EXTENDED -> Dependent.class;
+            default -> throw new InternalError();
+        };
     }
 
     static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
@@ -234,8 +259,8 @@ public final class JPAIntegration implements Extension {
         @Override
         public List<String> getManagedClassNames() {
             return Stream.concat(
-                    Stream.of(definition.managedClasses()).map(Class::getName),
-                    Stream.of(definition.managedClassNames())
+              Stream.of(definition.managedClasses()).map(Class::getName),
+              Stream.of(definition.managedClassNames())
             ).collect(Collectors.toList());
         }
 

@@ -20,26 +20,37 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import com.sun.xml.ws.binding.WebServiceFeatureList;
-import org.codegeny.jakartron.servlet.Base;
-import org.kohsuke.MetaInfServices;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.ProcessInjectionPoint;
+import jakarta.enterprise.inject.spi.WithAnnotations;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebServiceFeature;
+import jakarta.xml.ws.WebServiceRef;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
-import javax.jws.WebService;
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceFeature;
-import javax.xml.ws.WebServiceRef;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import com.sun.xml.ws.binding.WebServiceFeatureList;
+import org.kohsuke.MetaInfServices;
+
+import org.codegeny.jakartron.servlet.Base;
 
 @MetaInfServices
 public final class JAXWSIntegration implements Extension {
@@ -60,17 +71,16 @@ public final class JAXWSIntegration implements Extension {
         WebServiceRef webServiceRef = injectionPoint.getAnnotated().getAnnotation(WebServiceRef.class);
         if (webServiceRef != null) {
             Type portType = injectionPoint.getType();
-            if (portType instanceof Class<?>) {
-                Class<?> portInterface = (Class<?>) portType;
+            if (portType instanceof Class<?> portInterface) {
                 if (portInterface.isInterface() && portInterface.isAnnotationPresent(WebService.class)) {
                     WebServiceFeatureList webServiceFeatures = new WebServiceFeatureList();
                     webServiceFeatures.parseAnnotations(injectionPoint.getAnnotated().getAnnotations());
                     // TODO improve the key
                     beans.put(new HashSet<>(Arrays.asList(portInterface, base, webServiceRef)), afterBeanDiscovery -> afterBeanDiscovery
-                            .addBean()
-                            .types(portType)
-                            .qualifiers(base)
-                            .produceWith(instance -> createPort(instance.select(String.class, base).get(), portInterface, webServiceRef, webServiceFeatures.toArray()))
+                      .addBean()
+                      .types(portType)
+                      .qualifiers(base)
+                      .produceWith(instance -> createPort(instance.select(String.class, base).get(), portInterface, webServiceRef, webServiceFeatures.toArray()))
                     );
                 }
             }
@@ -90,12 +100,14 @@ public final class JAXWSIntegration implements Extension {
 
         if (webServiceRef.value().equals(Service.class)) {
             if (webService.targetNamespace().isEmpty() || webService.portName().isEmpty() || webService.serviceName().isEmpty()) {
-                throw new CreationException("If no Service class is specified in @WebServiceRef.value(), then targetNamespace(), portName() and serviceName() must all 3 be filled in the @WebService annotation on the port interface");
+                throw new CreationException(
+                  "If no Service class is specified in @WebServiceRef.value(), then targetNamespace(), portName() and serviceName() must all 3 be filled in the @WebService annotation on the port interface");
             }
             QName serviceName = new QName(webService.targetNamespace(), webService.serviceName());
             QName portName = new QName(webService.targetNamespace(), webService.portName());
             if (wsdlLocation.isEmpty()) {
-                throw new CreationException("If no Service class is specified in @WebServiceRef.value(), then wsdlLocation() must be filled either on @WebServiceRef or on the port interface @WebService");
+                throw new CreationException(
+                  "If no Service class is specified in @WebServiceRef.value(), then wsdlLocation() must be filled either on @WebServiceRef or on the port interface @WebService");
             }
             Service service = Service.create(Thread.currentThread().getContextClassLoader().getResource(wsdlLocation), serviceName, features);
             return service.getPort(portName, portClass);
@@ -104,27 +116,29 @@ public final class JAXWSIntegration implements Extension {
                 Service service = createService(webServiceRef.value(), wsdlLocation, features);
 
                 Method method = Stream.of(webServiceRef.value().getDeclaredMethods())
-                        .filter(m -> m.getParameterCount() == 0 && m.getReturnType().equals(portClass))
-                        .findFirst()
-                        .orElseThrow(() -> new CreationException("Cannot find a correct port factory method on the given service"));
+                  .filter(m -> m.getParameterCount() == 0 && m.getReturnType().equals(portClass))
+                  .findFirst()
+                  .orElseThrow(() -> new CreationException("Cannot find a correct port factory method on the given service"));
 
                 return method.invoke(service);
-            } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException exception) {
+            } catch (IllegalAccessException | InvocationTargetException | InstantiationException |
+                     NoSuchMethodException exception) {
                 throw new CreationException(exception);
             }
         }
     }
 
-    private Service createService(Class<? extends Service> serviceClass, String wsdlLocation, WebServiceFeature... features) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
+    private Service createService(Class<? extends Service> serviceClass, String wsdlLocation, WebServiceFeature... features)
+    throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
         if (wsdlLocation.isEmpty()) {
             return features.length == 0
-                    ? serviceClass.newInstance()
-                    : serviceClass.getConstructor(WebServiceFeature[].class).newInstance((Object) features);
+                   ? serviceClass.getDeclaredConstructor().newInstance()
+                   : serviceClass.getConstructor(WebServiceFeature[].class).newInstance((Object) features);
         } else {
             URL wsdlLocationUrl = Thread.currentThread().getContextClassLoader().getResource(wsdlLocation);
             return features.length == 0
-                    ? serviceClass.getConstructor(URL.class).newInstance(wsdlLocationUrl)
-                    : serviceClass.getConstructor(URL.class, WebServiceFeature[].class).newInstance(wsdlLocationUrl, features);
+                   ? serviceClass.getConstructor(URL.class).newInstance(wsdlLocationUrl)
+                   : serviceClass.getConstructor(URL.class, WebServiceFeature[].class).newInstance(wsdlLocationUrl, features);
         }
     }
 

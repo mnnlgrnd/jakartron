@@ -20,12 +20,12 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.kohsuke.MetaInfServices;
+import jakarta.ejb.Asynchronous;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
 
-import javax.ejb.Asynchronous;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
+import org.kohsuke.MetaInfServices;
 
 @MetaInfServices
 public final class AsynchronousExtension implements Extension {

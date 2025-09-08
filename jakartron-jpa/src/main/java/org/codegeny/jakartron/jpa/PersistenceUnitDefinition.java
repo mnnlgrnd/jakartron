@@ -9,9 +9,9 @@ package org.codegeny.jakartron.jpa;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,9 +20,10 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
-import javax.persistence.SharedCacheMode;
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
+
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -92,7 +93,7 @@ public @interface PersistenceUnitDefinition {
      * corresponds to a <code>mapping-file</code> element in the
      * <code>persistence.xml</code> file.
      *
-     * @return the list of mapping file names that the persistence
+     * @return the array of mapping file names that the persistence
      * provider must load to determine the mappings for the entity
      * classes
      */

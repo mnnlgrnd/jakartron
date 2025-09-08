@@ -20,21 +20,30 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import org.codegeny.jakartron.AdditionalClasses;
-import org.codegeny.jakartron.jaxws.events.*;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.servlet.Base;
-import org.junit.jupiter.api.Test;
-
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import javax.jws.*;
-import javax.xml.ws.RequestWrapper;
-import javax.xml.ws.ResponseWrapper;
-import javax.xml.ws.WebServiceRef;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.jws.HandlerChain;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebResult;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.RequestWrapper;
+import jakarta.xml.ws.ResponseWrapper;
+import jakarta.xml.ws.WebServiceRef;
+
+import org.junit.jupiter.api.Test;
+
+import org.codegeny.jakartron.AdditionalClasses;
+import org.codegeny.jakartron.jaxws.events.EventHandler;
+import org.codegeny.jakartron.jaxws.events.Inbound;
+import org.codegeny.jakartron.jaxws.events.Outbound;
+import org.codegeny.jakartron.jaxws.events.SOAPEvent;
+import org.codegeny.jakartron.jaxws.events.ServiceName;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.servlet.Base;
 
 @ExtendWithJakartron
 @AdditionalClasses(EventHandler.class)

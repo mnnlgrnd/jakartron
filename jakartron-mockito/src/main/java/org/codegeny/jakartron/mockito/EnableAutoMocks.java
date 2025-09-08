@@ -20,12 +20,12 @@ package org.codegeny.jakartron.mockito;
  * #L%
  */
 
-import org.codegeny.jakartron.AdditionalClasses;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.codegeny.jakartron.AdditionalClasses;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

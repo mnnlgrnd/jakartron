@@ -20,12 +20,12 @@ package org.codegeny.jakartron.junit;
  * #L%
  */
 
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 
 @ExtendWithJakartron
 public class TestEventTest {

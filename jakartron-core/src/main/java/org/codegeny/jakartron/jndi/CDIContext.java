@@ -20,8 +20,17 @@ package org.codegeny.jakartron.jndi;
  * #L%
  */
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.*;
+import jakarta.enterprise.inject.spi.BeanManager;
+
+import javax.naming.Binding;
+import javax.naming.CompoundName;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import java.util.Hashtable;
 import java.util.Properties;
 

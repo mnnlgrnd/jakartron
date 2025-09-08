@@ -20,20 +20,21 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.servlet.Base;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import jakarta.inject.Inject;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebResult;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.RequestWrapper;
+import jakarta.xml.ws.ResponseWrapper;
+import jakarta.xml.ws.WebServiceRef;
+
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
-import javax.jws.WebService;
-import javax.xml.ws.RequestWrapper;
-import javax.xml.ws.ResponseWrapper;
-import javax.xml.ws.WebServiceRef;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.servlet.Base;
 
 @ExtendWithJakartron
 public class WrappedTest {

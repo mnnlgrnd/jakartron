@@ -20,13 +20,14 @@ package org.codegeny.jakartron;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
-import org.codegeny.jakartron.mockito.EnableMockito;
+import jakarta.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 
-import javax.inject.Inject;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import org.codegeny.jakartron.mockito.EnableMockito;
 
 @DisableDiscovery
 @ExtendWithJakartron

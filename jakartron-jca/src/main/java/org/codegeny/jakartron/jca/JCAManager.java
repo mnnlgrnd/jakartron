@@ -20,34 +20,40 @@ package org.codegeny.jakartron.jca;
  * #L%
  */
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
-import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.geronimo.connector.GeronimoBootstrapContext;
-import org.apache.geronimo.connector.work.GeronimoWorkManager;
-import org.codegeny.jakartron.CoreExtension;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.transaction.TransactionManager;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.TransactionManager;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.geronimo.connector.GeronimoBootstrapContext;
+import org.apache.geronimo.connector.work.GeronimoWorkManager;
+
+import org.codegeny.jakartron.CoreExtension;
 
 @ApplicationScoped
 public class JCAManager {
@@ -74,7 +80,7 @@ public class JCAManager {
         public void addMessageEndpoint(Instance<?> messageEndpointProvider, Properties properties, Class<?> endpointClass) {
             activations.add(tm -> {
                 try {
-                    ActivationSpec spec = activationSpecClass.newInstance();
+                    ActivationSpec spec = activationSpecClass.getDeclaredConstructor().newInstance();
                     for (String key : properties.stringPropertyNames()) {
                         BeanUtils.copyProperty(spec, key, properties.get(key));
                     }
@@ -86,7 +92,7 @@ public class JCAManager {
                         LOGGER.fine(() -> "Deactivating JCA endpoint " + endpointClass + " with spec " + spec);
                         resourceAdapter.endpointDeactivation(factory, spec);
                     });
-                } catch (ResourceException | InstantiationException | IllegalAccessException | InvocationTargetException exception) {
+                } catch (ResourceException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
                     throw new RuntimeException(exception);
                 }
             });

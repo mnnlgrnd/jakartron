@@ -25,7 +25,16 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -43,17 +52,17 @@ public abstract class Annotations {
         Expander DECLARING = annotated -> Stream.of(annotated).flatMap(asStream(Member.class)).map(Member::getDeclaringClass);
         Expander META_ANNOTATIONS = annotated -> Stream.of(annotated.getAnnotations()).map(Annotation::annotationType);
         Expander OVERRIDES = annotated -> Stream.of(annotated).flatMap(asStream(Method.class))
-                .filter(method -> !Modifier.isStatic(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers()))
-                .flatMap(method -> Stream.concat(
-                                        Stream.of(method.getDeclaringClass().getSuperclass()).filter(Objects::nonNull),
-                                        Stream.of(method.getDeclaringClass().getInterfaces())
-                                )
-                                .flatMap(type -> Stream.of(type.getMethods())
-                                        .filter(m -> !Modifier.isStatic(m.getModifiers()) && !Modifier.isPrivate(m.getModifiers()) && !Modifier.isFinal(m.getModifiers()))
-                                        .filter(m -> m.getName().equals(method.getName()))
-                                        .filter(m -> Arrays.equals(m.getParameterTypes(), method.getParameterTypes()))
-                                )
-                );
+          .filter(method -> !Modifier.isStatic(method.getModifiers()) && !Modifier.isPrivate(method.getModifiers()))
+          .flatMap(method -> Stream.concat(
+                       Stream.of(method.getDeclaringClass().getSuperclass()).filter(Objects::nonNull),
+                       Stream.of(method.getDeclaringClass().getInterfaces())
+                     )
+                     .flatMap(type -> Stream.of(type.getMethods())
+                       .filter(m -> !Modifier.isStatic(m.getModifiers()) && !Modifier.isPrivate(m.getModifiers()) && !Modifier.isFinal(m.getModifiers()))
+                       .filter(m -> m.getName().equals(method.getName()))
+                       .filter(m -> Arrays.equals(m.getParameterTypes(), method.getParameterTypes()))
+                     )
+          );
 
         static Expander of(Expander... expanders) {
             return Stream.of(expanders).reduce((a, b) -> annotatedElement -> Stream.concat(a.expand(annotatedElement), b.expand(annotatedElement))).orElseGet(() -> annotatedElement -> Stream.empty());

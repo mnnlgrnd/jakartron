@@ -20,25 +20,34 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
+import jakarta.annotation.Resource;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.MessageDriven;
+import jakarta.inject.Inject;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.Queue;
+import jakarta.jms.TemporaryQueue;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.MessageDriven;
-import javax.inject.Inject;
-import javax.jms.*;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
-@JMSDestinationDefinition(name = MDBTest.QUEUE_NAME, interfaceName = "javax.jms.Queue")
+@JMSDestinationDefinition(name = MDBTest.QUEUE_NAME, interfaceName = "jakarta.jms.Queue")
 public class MDBTest {
 
     public static final String QUEUE_NAME = "myQueue";
 
     @MessageDriven(activationConfig = {
-            @ActivationConfigProperty(propertyName = "destination", propertyValue = QUEUE_NAME),
-            @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
+      @ActivationConfigProperty(propertyName = "destination", propertyValue = QUEUE_NAME),
+      @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
     })
     public static class MyMDB implements MessageListener {
 

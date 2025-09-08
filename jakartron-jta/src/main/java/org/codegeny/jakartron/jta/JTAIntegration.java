@@ -9,9 +9,9 @@ package org.codegeny.jakartron.jta;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,18 @@ package org.codegeny.jakartron.jta;
  * #L%
  */
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.UserTransaction;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
-import org.codegeny.jakartron.jndi.JNDI;
 import org.kohsuke.MetaInfServices;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
+import org.codegeny.jakartron.jndi.JNDI;
 
 @MetaInfServices
 public final class JTAIntegration implements Extension {
@@ -41,19 +42,19 @@ public final class JTAIntegration implements Extension {
 
     public void addTransactionContextAndProducer(@Observes AfterBeanDiscovery event) {
         event.addBean()
-                .scope(ApplicationScoped.class)
-                .qualifiers(JNDI.Literal.of(TRANSACTION_MANAGER_JNDI_NAME))
-                .types(Object.class, TransactionManager.class)
-                .createWith(context -> com.arjuna.ats.jta.TransactionManager.transactionManager());
+		  .scope(ApplicationScoped.class)
+		  .qualifiers(JNDI.Literal.of(TRANSACTION_MANAGER_JNDI_NAME))
+		  .types(Object.class, TransactionManager.class)
+		  .createWith(context -> com.arjuna.ats.jta.TransactionManager.transactionManager());
         event.addBean()
-                .scope(ApplicationScoped.class)
-                .qualifiers(JNDI.Literal.of(USER_TRANSACTION_JNDI_NAME))
-                .types(Object.class, UserTransaction.class)
-                .createWith(context -> com.arjuna.ats.jta.UserTransaction.userTransaction());
+		  .scope(ApplicationScoped.class)
+		  .qualifiers(JNDI.Literal.of(USER_TRANSACTION_JNDI_NAME))
+		  .types(Object.class, UserTransaction.class)
+		  .createWith(context -> com.arjuna.ats.jta.UserTransaction.userTransaction());
         event.addBean()
-                .scope(ApplicationScoped.class)
-                .qualifiers(JNDI.Literal.of(TRANSACTION_SYNCHRONIZATION_REGISTRY_JNDI_NAME))
-                .types(Object.class, TransactionSynchronizationRegistry.class)
-                .createWith(context -> new TransactionSynchronizationRegistryImple());
+		  .scope(ApplicationScoped.class)
+		  .qualifiers(JNDI.Literal.of(TRANSACTION_SYNCHRONIZATION_REGISTRY_JNDI_NAME))
+		  .types(Object.class, TransactionSynchronizationRegistry.class)
+		  .createWith(context -> new TransactionSynchronizationRegistryImple());
     }
 }

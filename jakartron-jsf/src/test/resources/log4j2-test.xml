@@ -17,16 +17,16 @@
   #L%
 -->
 <Configuration status="INFO">
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%highlight{%level}] %style{%date{HH:mm:ss.SSS}}{bright,yellow} [%thread] %style{%logger}{cyan} - %message%n%rException" disableAnsi="false"/>
-        </Console>
-    </Appenders>
-    <Loggers>
-        <Logger name="org.codegeny.jakartron" level="INFO"/>
-        <Logger name="com.gargoylesoftware.htmlunit.DefaultCssErrorHandler" level="ERROR"/>
-        <Root level="WARN">
-            <AppenderRef ref="Console"/>
-        </Root>
-    </Loggers>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%highlight{%level}] %style{%date{HH:mm:ss.SSS}}{bright,yellow} [%thread] %style{%logger}{cyan} - %message%n%rException" disableAnsi="false"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.codegeny.jakartron" level="INFO"/>
+		<Logger name="com.gargoylesoftware.htmlunit.DefaultCssErrorHandler" level="ERROR"/>
+		<Root level="WARN">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
 </Configuration>

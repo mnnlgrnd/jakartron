@@ -20,27 +20,32 @@ package org.codegeny.jakartron.mockito;
  * #L%
  */
 
-import org.codegeny.jakartron.BeanContract;
-import org.codegeny.jakartron.junit.TestEvent;
-import org.codegeny.jakartron.junit.TestPhase;
-import org.codegeny.jakartron.junit.TestScoped;
-import org.mockito.Mockito;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.CreationException;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AfterTypeDiscovery;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessInjectionPoint;
+import jakarta.inject.Singleton;
+import jakarta.interceptor.Interceptor;
 
-import javax.annotation.Priority;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
-import javax.inject.Singleton;
-import javax.interceptor.Interceptor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.mockito.Mockito;
+
+import org.codegeny.jakartron.BeanContract;
+import org.codegeny.jakartron.junit.TestEvent;
+import org.codegeny.jakartron.junit.TestPhase;
+
 /**
  * This extension will add a mock for each non-resolvable injection point.
  * <p>
- * This extension is opt-in (not listed in META-INF/services/javax.enterprise.inject.spi.Extension).
+ * This extension is opt-in (not listed in META-INF/services/jakarta.enterprise.inject.spi.Extension).
  */
 public final class AutoMockExtension implements Extension {
 
@@ -58,22 +63,22 @@ public final class AutoMockExtension implements Extension {
         // create a mock for all non-resolvable injection point
         Set<Object> reset = new HashSet<>();
         contracts.stream()
-                .filter(contract -> beanManager.resolve(beanManager.getBeans(contract.getType(), contract.getQualifiersAsArray())) == null)
-                .forEach(contract -> event.addBean()
-                        .alternative(true)
-                        .scope(Singleton.class)
-                        .qualifiers(contract.getQualifiers())
-                        .types(contract.getType())
-                        .produceWith(instance -> {
-                            Object mock = Mockito.mock(rawType(contract.getType()));
-                            reset.add(mock);
-                            return mock;
-                        })
-                );
+          .filter(contract -> beanManager.resolve(beanManager.getBeans(contract.getType(), contract.getQualifiersAsArray())) == null)
+          .forEach(contract -> event.addBean()
+            .alternative(true)
+            .scope(Singleton.class)
+            .qualifiers(contract.getQualifiers())
+            .types(contract.getType())
+            .produceWith(instance -> {
+                Object mock = Mockito.mock(rawType(contract.getType()));
+                reset.add(mock);
+                return mock;
+            })
+          );
         event.addObserverMethod()
-                .observedType(Object.class)
-                .qualifiers(TestEvent.Literal.of(TestPhase.AFTER_EACH))
-                .notifyWith(e -> reset.forEach(Mockito::reset));
+          .observedType(Object.class)
+          .qualifiers(TestEvent.Literal.of(TestPhase.AFTER_EACH))
+          .notifyWith(e -> reset.forEach(Mockito::reset));
     }
 
     private static Class<?> rawType(Type type) {

@@ -20,17 +20,19 @@ package org.codegeny.jakartron.ejb;
  * #L%
  */
 
+import jakarta.annotation.Resource;
+import jakarta.ejb.Lock;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.awaitility.Awaitility;
-import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Resource;
-import javax.ejb.Lock;
-import javax.ejb.Singleton;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.codegeny.jakartron.junit.ExtendWithJakartron;
 
 @ExtendWithJakartron
 public class LockTest {
@@ -54,9 +56,9 @@ public class LockTest {
         executor.submit(() -> lockedBean.doSomething(counter));
         executor.submit(() -> lockedBean.doSomething(counter));
         Awaitility.await()
-                .atLeast(3, TimeUnit.SECONDS)
-                .atMost(5, TimeUnit.SECONDS)
-                .untilAsserted(() -> Assertions.assertEquals(2, counter.get()));
+          .atLeast(3, TimeUnit.SECONDS)
+          .atMost(5, TimeUnit.SECONDS)
+          .untilAsserted(() -> Assertions.assertEquals(2, counter.get()));
 
     }
 }

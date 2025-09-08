@@ -20,21 +20,22 @@ package org.codegeny.jakartron.jpa;
  * #L%
  */
 
+import static jakarta.persistence.spi.PersistenceUnitTransactionType.JTA;
+
+import jakarta.annotation.sql.DataSourceDefinition;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import org.codegeny.jakartron.DisableDiscovery;
 import org.codegeny.jakartron.jpa.PersistenceUnitDefinition.Property;
 import org.codegeny.jakartron.junit.ExtendWithJakartron;
 import org.codegeny.jakartron.mockito.EnableAutoMocks;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.sql.DataSourceDefinition;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-
-import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
 
 @ExtendWithJakartron
 @DisableDiscovery
@@ -42,8 +43,8 @@ import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
 @EnableAutoMocks
 @DataSourceDefinition(name = "mydb", className = "org.h2.jdbcx.JdbcDataSource", url = "jdbc:h2:mem:mydb")
 @PersistenceUnitDefinition(unitName = "tests", jtaDataSourceName = "mydb", transactionType = JTA, managedClasses = President.class, properties = {
-        @Property(name = "javax.persistence.schema-generation.database.action", value = "create"),
-        @Property(name = "hibernate.show_sql", value = "false")
+  @Property(name = "jakarta.persistence.schema-generation.database.action", value = "create"),
+  @Property(name = "hibernate.show_sql", value = "false")
 })
 public class JPADBAndMocksTest {
 

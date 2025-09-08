@@ -17,8 +17,8 @@
   #L%
 -->
 <dataset>
-
-    <thing name="foo"/>
-    <thing name="bar"/>
+	
+	<thing name="foo"/>
+	<thing name="bar"/>
 
 </dataset>

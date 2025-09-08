@@ -20,13 +20,13 @@ package org.codegeny.jakartron.jaxws;
  * #L%
  */
 
-import org.codegeny.jakartron.AdditionalClasses;
-import org.codegeny.jakartron.servlet.EnableServlet;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.codegeny.jakartron.AdditionalClasses;
+import org.codegeny.jakartron.servlet.EnableServlet;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
