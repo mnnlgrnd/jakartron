@@ -20,16 +20,5 @@ jobs:
                     key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
                     restore-keys: |
                         ${{ runner.os }}-maven-
-            -   name: Configure environment
-                run: |
-                    git config --global user.name "${{ github.event.head_commit.committer.name }}"
-                    git config --global user.email "${{ github.event.head_commit.committer.email }}"
-                    echo -n "$SECRET_KEY_RING" | gpg --import > ./gpg.logs
-                    echo -n "$MAVEN_SETTINGS" > ./settings.xml
-                env:
-                    SECRET_KEY_RING: ${{ secrets.SECRET_KEY_RING }}
-                    MAVEN_SETTINGS: ${{ secrets.MAVEN_SETTINGS }}
             -   name: Build artifacts with Maven
                 run: mvn verify --batch-mode --update-snapshots
-            -   name: Deploy artifacts to Sonatype Nexus
-                run: mvn deploy --settings ./settings.xml --activate-profiles deploy --batch-mode
