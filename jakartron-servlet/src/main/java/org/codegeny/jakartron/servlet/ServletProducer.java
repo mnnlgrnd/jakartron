@@ -42,6 +42,7 @@ import org.apache.tomcat.SimpleInstanceManager;
 import org.apache.tomcat.util.scan.Constants;
 import org.eclipse.jetty.ee10.servlet.DefaultServlet;
 import org.eclipse.jetty.ee10.webapp.Configurations;
+import org.eclipse.jetty.ee10.webapp.JaspiConfiguration;
 import org.eclipse.jetty.ee10.webapp.JettyWebXmlConfiguration;
 import org.eclipse.jetty.ee10.webapp.JspConfiguration;
 import org.eclipse.jetty.ee10.webapp.MetaInfConfiguration;
@@ -49,6 +50,7 @@ import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.UserStore;
+import org.eclipse.jetty.security.authentication.LoginAuthenticator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
@@ -58,6 +60,7 @@ import org.jboss.weld.module.web.servlet.WeldInitialListener;
 import org.jboss.weld.module.web.servlet.WeldTerminalListener;
 
 import org.codegeny.jakartron.CoreExtension;
+import org.codegeny.jakartron.security.SecurityContextController;
 
 /**
  * Simple Servlet integration which starts/stops a jetty server on a random available port and fire a ServletContext
@@ -109,7 +112,7 @@ final class ServletProducer {
     }
 
     @Produces
-    private WebAppContext webAppContext(BeanManager beanManager, LoginService loginService) throws Exception {
+    private WebAppContext webAppContext(BeanManager beanManager, LoginService loginService, LoginAuthenticator authenticator) throws Exception {
         ResourceFactory factory = ResourceFactory.root();
         List<Resource> baseResources = new ArrayList<>();
 
@@ -127,13 +130,14 @@ final class ServletProducer {
 
         baseResources.removeIf(Objects::isNull);
         WebAppContext webAppContext = new WebAppContext(Paths.get(System.getProperty("java.io.tmpdir")).toUri().toASCIIString(), "/");
-        webAppContext.addConfiguration(new JettyWebXmlConfiguration(), new JspConfiguration());
+        webAppContext.addConfiguration(new JettyWebXmlConfiguration(), new JspConfiguration(), new JaspiConfiguration());
         webAppContext.setBaseResource(ResourceFactory.combine(baseResources));
         webAppContext.setAttribute(MetaInfConfiguration.CONTAINER_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
         webAppContext.setAttribute(MetaInfConfiguration.WEBINF_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
         webAppContext.addEventListener(new WeldInitialListener(BeanManagerProxy.unwrap(beanManager)));
         webAppContext.addEventListener(new BridgingServletContextListener(beanManager));
         webAppContext.getSecurityHandler().setLoginService(loginService);
+        webAppContext.getSecurityHandler().setAuthenticator(authenticator);
         webAppContext.addServletContainerInitializer((set, servletContext) -> servletContext.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager()));
         webAppContext.addServlet(JspServlet.class, "*.jsp");
         webAppContext.addServlet(DefaultServlet.class, "/");
@@ -147,6 +151,11 @@ final class ServletProducer {
         HashLoginService loginService = new HashLoginService();
         loginService.setUserStore(userStore);
         return loginService;
+    }
+
+    @Produces
+    public LoginAuthenticator authenticator(SecurityContextController securityContextController) {
+        return new SecurityBasicAuthenticator(securityContextController);
     }
 
     @Produces
@@ -169,4 +178,5 @@ final class ServletProducer {
             return password.equals(credentials);
         }
     }
+
 }
