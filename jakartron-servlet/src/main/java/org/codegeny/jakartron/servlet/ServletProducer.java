@@ -37,14 +37,15 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 import org.apache.jasper.servlet.JspServlet;
+import org.apache.tomcat.InstanceManager;
+import org.apache.tomcat.SimpleInstanceManager;
 import org.apache.tomcat.util.scan.Constants;
-import org.eclipse.jetty.ee10.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.ee10.servlet.DefaultServlet;
 import org.eclipse.jetty.ee10.webapp.Configurations;
 import org.eclipse.jetty.ee10.webapp.JettyWebXmlConfiguration;
+import org.eclipse.jetty.ee10.webapp.JspConfiguration;
 import org.eclipse.jetty.ee10.webapp.MetaInfConfiguration;
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
-import org.eclipse.jetty.ee10.webapp.WebInfConfiguration;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.UserStore;
@@ -55,6 +56,8 @@ import org.eclipse.jetty.util.security.Credential;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
 import org.jboss.weld.module.web.servlet.WeldInitialListener;
 import org.jboss.weld.module.web.servlet.WeldTerminalListener;
+
+import org.codegeny.jakartron.CoreExtension;
 
 /**
  * Simple Servlet integration which starts/stops a jetty server on a random available port and fire a ServletContext
@@ -98,10 +101,9 @@ final class ServletProducer {
     private Server startServer(WebAppContext webAppContext, BeanManager beanManager) throws Exception {
         Server server = new Server(0);
         Configurations.setServerDefault(server);
-        //		  .add(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
         server.setHandler(webAppContext);
         server.start();
-        //		beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
+        beanManager.getExtension(CoreExtension.class).addShutdownHook(server::stop);
         LOGGER.info(() -> String.format("Started server on %s", server.getURI()));
         return server;
     }
@@ -125,18 +127,18 @@ final class ServletProducer {
 
         baseResources.removeIf(Objects::isNull);
         WebAppContext webAppContext = new WebAppContext(Paths.get(System.getProperty("java.io.tmpdir")).toUri().toASCIIString(), "/");
-        webAppContext.addConfiguration(new JettyWebXmlConfiguration(), new AnnotationConfiguration(), new WebInfConfiguration());
+        webAppContext.addConfiguration(new JettyWebXmlConfiguration(), new JspConfiguration());
         webAppContext.setBaseResource(ResourceFactory.combine(baseResources));
         webAppContext.setAttribute(MetaInfConfiguration.CONTAINER_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
         webAppContext.setAttribute(MetaInfConfiguration.WEBINF_JAR_PATTERN, ".*taglibs-standard-impl-.*\\.jar$");
         webAppContext.addEventListener(new WeldInitialListener(BeanManagerProxy.unwrap(beanManager)));
         webAppContext.addEventListener(new BridgingServletContextListener(beanManager));
         webAppContext.getSecurityHandler().setLoginService(loginService);
+        webAppContext.addServletContainerInitializer((set, servletContext) -> servletContext.setAttribute(InstanceManager.class.getName(), new SimpleInstanceManager()));
         webAppContext.addServlet(JspServlet.class, "*.jsp");
         webAppContext.addServlet(DefaultServlet.class, "/");
         beanManager.getEvent().select(WebAppContext.class).fire(webAppContext);
         webAppContext.addEventListener(new WeldTerminalListener(BeanManagerProxy.unwrap(beanManager)));
-        //		webAppContext.configure();
         return webAppContext;
     }
 

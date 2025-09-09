@@ -30,10 +30,6 @@ public final class CDIInitialContextFactory implements InitialContextFactory {
 
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) {
-        //		ClassLoader old = Thread.currentThread().getContextClassLoader();
-        //		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-        var beanManager = CDI.current().getBeanManager();
-        //		Thread.currentThread().setContextClassLoader(old);
-        return new CDIContext(beanManager);
+        return new CDIContext(CDI.current().getBeanManager());
     }
 }
