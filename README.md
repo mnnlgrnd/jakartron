@@ -26,7 +26,7 @@ In your `pom.xml`, import the module you need in your application:
         <dependency>
             <groupId>org.codegeny.jakartron</groupId>
             <artifactId>jakartron-bom</artifactId>
-            <version>0.1.2</version>
+            <version>0.1.3-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

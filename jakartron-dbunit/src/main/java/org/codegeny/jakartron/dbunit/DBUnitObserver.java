@@ -24,6 +24,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
+import java.util.Arrays;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import org.codegeny.jakartron.junit.TestEvent;
@@ -36,11 +40,17 @@ public class DBUnitObserver {
     private DBUnitProcessor processor;
 
     public void before(@Observes @TestEvent(phase = TestPhase.BEFORE_EACH) ExtensionContext context) {
+        Arrays.stream(context.getRequiredTestMethod().getDeclaringClass().getMethods())
+          .filter(m -> m.isAnnotationPresent(BeforeEach.class) && m.isAnnotationPresent(DBUnit.class))
+          .findFirst().ifPresent(m -> processor.before(m));
         processor.before(context.getRequiredTestMethod());
     }
 
     public void after(@Observes @TestEvent(phase = TestPhase.AFTER_EACH) ExtensionContext context) {
-        if (!context.getExecutionException().isPresent()) {
+        if (context.getExecutionException().isEmpty()) {
+            Arrays.stream(context.getRequiredTestMethod().getDeclaringClass().getMethods())
+              .filter(m -> m.isAnnotationPresent(AfterEach.class) && m.isAnnotationPresent(DBUnit.class))
+              .findFirst().ifPresent(m -> processor.after(m));
             processor.after(context.getRequiredTestMethod());
         }
     }
