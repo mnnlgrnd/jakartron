@@ -48,10 +48,10 @@ public class DBUnitObserver {
 
     public void after(@Observes @TestEvent(phase = TestPhase.AFTER_EACH) ExtensionContext context) {
         if (context.getExecutionException().isEmpty()) {
+            processor.after(context.getRequiredTestMethod());
             Arrays.stream(context.getRequiredTestMethod().getDeclaringClass().getMethods())
               .filter(m -> m.isAnnotationPresent(AfterEach.class) && m.isAnnotationPresent(DBUnit.class))
               .findFirst().ifPresent(m -> processor.after(m));
-            processor.after(context.getRequiredTestMethod());
         }
     }
 }
